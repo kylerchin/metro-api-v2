@@ -6,7 +6,6 @@ uvicorn
 requests
 python-dotenv
 pytz
-schedule
 python-multipart
 SQLAlchemy<1.4
 psycopg2
@@ -15,3 +14,4 @@ passlib[bcrypt]
 aiofiles
 # GeoAlchemy2
 jinja2
+fastapi-restful[tasks]

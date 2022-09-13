@@ -6,11 +6,6 @@ import requests
 import csv
 import os 
 
-# import scheduling modules
-import threading
-import time
-import schedule
-
 import pytz
 
 from typing import Dict, List, Optional
@@ -20,12 +15,17 @@ from datetime import timedelta, date, datetime
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 
+from sqlalchemy.orm import aliased
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
+
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 # for OAuth2
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
@@ -43,6 +43,7 @@ from .gtfs_rt import *
 from pathlib import Path
 
 from logzio.handler import LogzioHandler
+from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
 PATH_TO_CALENDAR_JSON = 'app/data/calendar_dates.json'
@@ -56,26 +57,8 @@ app = FastAPI(docs_url="/")
 templates = Jinja2Templates(directory="app/frontend")
 app.mount("/", StaticFiles(directory="app/frontend"))
 
-# code from https://schedule.readthedocs.io/en/stable/background-execution.html
-def run_continuously(interval=UPDATE_INTERVAL):
-    cease_continuous_run = threading.Event()
-    class ScheduleThread(threading.Thread):
-        @classmethod
-        def run(cls):
-            while not cease_continuous_run.is_set():
-                schedule.run_pending()
-                time.sleep(interval)
-    continuous_thread = ScheduleThread()
-    continuous_thread.start()
-    return cease_continuous_run
-
-def background_job():
-    update_canceled_trips.run_update()
-
-schedule.every().second.do(background_job)
-
-# Start the background thread
-stop_run_continuously = run_continuously()
+# code from https://fastapi-restful.netlify.app/user-guide/repeated-tasks/
+@app.on_event("startup")
 
 def csv_to_json(csvFilePath, jsonFilePath):
     jsonArray = []
@@ -110,17 +93,22 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Begin Routes
+####################
+#  Begin Routes
+####################
 
-# @app.get("/users/me")
-# async def read_users_me(current_user: User = Depends(get_current_user)):
-#     return current_user
+# tokens
 
+@app.get("/verify_email/{email_verification_token}")
+async def verify_email_route(email_verification_token: str,db: Session = Depends(get_db)):
+    
+    if not crud.verify_email(email_verification_token,db):
+        return False
 
-# begin tokens
+    return "email verified"
 
 @app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db),token: str = Depends(oauth2_scheme)):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
     user = crud.authenticate_user(form_data.username, form_data.password,db)
     if not user:
         raise HTTPException(
@@ -141,7 +129,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db),token: str = Depends(oauth2_scheme)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -264,6 +252,45 @@ async def vehicle_positions(service, output_format: Optional[str] = None):
         result = get_vehicle_positions(service, '')
         return Response(content=result, media_type="application/x-protobuf")
 
+### bus endpoints ### :)
+
+@app.get("/bus/stop_times/{trip_id}")
+async def get_bus_stop_times_by_route_code(trip_id, db: Session = Depends(get_db)):
+    result = crud.get_bus_stop_times_by_trip_id(db,trip_id)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
+@app.get("/bus/stop_times/route_code/{route_code}")
+async def get_bus_stop_times_by_route_code(route_code, db: Session = Depends(get_db)):
+    result = crud.get_bus_stop_times_by_route_code(db,route_code)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
+@app.get("/bus/stops/{stop_id}")
+async def get_bus_stops(stop_id, db: Session = Depends(get_db)):
+    result = crud.get_bus_stops(db,stop_id)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
+@app.get("/bus/trips/{trip_id}")
+async def get_bus_trips(trip_id, db: Session = Depends(get_db)):
+    # table_alias = aliased(models.Trips)
+    result = crud.get_gtfs_data(db,models.Trips,'trip_id',trip_id)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
+@app.get("/bus/shapes/{shape_id}")
+async def get_bus_shapes(shape_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_data(db,models.Shapes,'shape_id',shape_id)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
+@app.get("/bus/routes/{route_id}")
+async def get_bus_routes(route_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_data(db,models.Routes,'route_id',route_id)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+    
 # @app.get("/agencies/")
 # async def root():
 #     return {"Metro API Version": "2.0.3"}
@@ -291,6 +318,11 @@ class LogFilter(logging.Filter):
         record.app = "api.metro.net"
         record.env = Config.RUNNING_ENV
         return True
+
+@app.on_event("startup")
+@repeat_every(seconds=UPDATE_INTERVAL)
+async def startup_event_ftp():
+    update_canceled_trips.run_update()
 
 @app.on_event("startup")
 async def startup_event():

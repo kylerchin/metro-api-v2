@@ -3,6 +3,11 @@ from pydantic import BaseModel, Json, ValidationError
 
 from .config import Config
 
+class EmailVerifyToken(BaseModel):
+    email_address: str
+    # email_token: str
+    # token_type: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -17,6 +22,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     username: str
     password: str
+    # email_token: str
 
 class User(UserBase):
     id: int
@@ -37,4 +43,53 @@ class CanceledServiceData(BaseModel):
     trip_time_end: str
     trip_direction: str
 
+class StopTimes(BaseModel):
+    trip_id: str
+    arrival_time: str
+    departure_time: str
+    stop_id: int
+    stop_sequence: int
+    stop_headsign: str
+    pickup_type: int
+    drop_off_type: int
+    trip_id_event: str
+    route_code: int
+    destination_code: str
+    timepoint: int
+    bay_num: int
+    id: int
 
+class Stops(BaseModel):
+    stop_id: int
+    stop_code: int
+    stop_name: str
+    stop_desc: str
+    stop_lat: float
+    stop_lon: float
+    stop_url: str
+    location_type: str
+    parent_station: str
+    tpis_name: str
+
+class Trips(BaseModel):
+    route_id: int
+    service_id: str
+    trip_id: str
+    trip_headsign: str
+    direction_id: int
+    block_id: int
+    shape_id: str
+    trip_id_event: str
+
+class Routes(BaseModel):
+    route_id: int
+    route_short_name: str
+    route_long_name: str
+    route_desc: str
+    route_type: int
+
+class Shapes(BaseModel):
+    shape_id: str
+    shape_pt_lat: float
+    shape_pt_lon: float
+    shape_pt_sequence: int
