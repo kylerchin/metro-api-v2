@@ -6,12 +6,13 @@ uvicorn
 requests
 python-dotenv
 pytz
-schedule
 python-multipart
-SQLAlchemy<1.4
+SQLAlchemy
 psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
 aiofiles
 # GeoAlchemy2
 jinja2
+fastapi-restful[tasks]
+pandas

@@ -5,7 +5,7 @@ import json, requests
 from fastapi import HTTPException
 
 from .utils.log_helper import *
-
+from sqlalchemy.orm import sessionmaker
 SWIFTLY_API_REALTIME = 'https://api.goswift.ly/real-time/'
 
 SERVICE_DICT = {
@@ -102,6 +102,28 @@ def get_vehicle_positions(service, output_format):
     else:
         logger.exception('Invalid service: ' + service)
         raise HTTPException(status_code=400, detail='Invalid service provided')
+
+def get_bus_positions(line, output_format):
+    if line in Config.BUS_LINES:
+        if (output_format == 'json'):
+            output_file = TARGET_FOLDER + 'bus-' + line + '-' + SWIFTLY_GTFS_RT_VEHICLE_POSITIONS + '.json'
+            connect_to_swiftly('bus', SWIFTLY_GTFS_RT_VEHICLE_POSITIONS, output_file, output_format)
+            with open(output_file, 'r') as file:
+                logger.info('Reading json file: ' + output_file)
+                vehicle_positions_json = json.loads(file.read())
+                file.close()
+                return vehicle_positions_json
+        else:
+            output_file = TARGET_FOLDER + 'bus-' + line + '-' + SWIFTLY_GTFS_RT_VEHICLE_POSITIONS + '.pb'
+            connect_to_swiftly('bus', SWIFTLY_GTFS_RT_VEHICLE_POSITIONS, output_file, output_format)
+            with open(output_file, 'rb') as file:
+                logger.info('Reading protobuf file: ' + output_file)
+                vehicle_positions_proto = file.read()
+                file.close()
+                return vehicle_positions_proto
+    else:
+        logger.exception('Invalid line: ' + line)
+        raise HTTPException(status_code=400, detail='Invalid line provided')
 
 # def write_output_file(output_format):
 #     output_file = TARGET_FOLDER + service + '-' + SWIFTLY_GTFS_RT_VEHICLE_POSITIONS + '.json'

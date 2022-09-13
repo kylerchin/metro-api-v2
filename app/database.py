@@ -13,13 +13,12 @@ Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 session = Session()
 
-Base = declarative_base(metadata=MetaData(schema="metro_api"))
+Base = declarative_base(metadata=MetaData(schema="metro_api_dev"))
 
 def get_db():
     db = Session()
     try:
-        log.debug('From database.py: ')
-        log.debug(type(db))
+        logger.info('Connected to the database')
         yield db
     finally:
         db.close()
