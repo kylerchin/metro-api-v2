@@ -1,0 +1,17 @@
+fastapi==0.63.0
+pydantic==1.8.1
+starlette==0.13.6
+typing-extensions==3.7.4.3
+uvicorn
+requests
+python-dotenv
+pytz
+schedule
+python-multipart
+SQLAlchemy<1.4
+psycopg2
+python-jose[cryptography]
+passlib[bcrypt]
+aiofiles
+# GeoAlchemy2
+jinja2
