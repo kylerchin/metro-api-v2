@@ -7,7 +7,7 @@ requests
 python-dotenv
 pytz
 python-multipart
-SQLAlchemy<1.4
+SQLAlchemy
 psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
