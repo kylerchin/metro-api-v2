@@ -17,11 +17,11 @@ import timeit
 from datetime import datetime
 from sqlalchemy.orm import Session,sessionmaker
 from sqlalchemy import create_engine, inspect
-from app import gtfs_rt
+from ..models.gtfs_rt import gtfs_rt
 from app.config import Config
 
 from .gtfs_realtime_pb2 import FeedMessage
-from ..database import Session,get_db
+from .database_connector import Session,get_db
 
 # from ..schemas import TripUpdates, StopTimeUpdates,VehiclePositions
 from ..config import Config
@@ -49,11 +49,11 @@ session = Session()
 # Connect to the database
 def connect_to_db():
     try:
-        logger.info('Connecting to the database')
+        print('Connecting to the database')
         db = Session()
         yield db
     except Exception as e:
-        logger.error(e)
+        print(e)
         raise e
     finally:
         session.close()
@@ -71,12 +71,12 @@ def connect_to_swiftly(service, endpoint):
         "Authorization": key
     }
     try:
-        logger.info('Connecting to Swiftly API: ' + swiftly_endpoint)
+        print('Connecting to Swiftly API: ' + swiftly_endpoint)
         response = requests.get(swiftly_endpoint, headers=header)
-        logger.info('Response status code: ' + str(response.status_code))
+        print('Response status code: ' + str(response.status_code))
         return response.content
     except Exception as e:
-        logger.exception('Error connecting to Swiftly API: ' + str(e))
+        print.exception('Error connecting to Swiftly API: ' + str(e))
         return
 
 def update_gtfs_realtime_data():
@@ -135,12 +135,12 @@ def update_gtfs_realtime_data():
                 'vehicle_label': entity.vehicle.vehicle.label
             })
     vehicle_position_updates = pd.DataFrame(vehicle_position_update_array)
-    # logging.info('vehicle_position_updates Data Frame: ' + str(vehicle_position_updates))
+    # logging('vehicle_position_updates Data Frame: ' + str(vehicle_position_updates))
     vehicle_position_updates.to_sql('vehicle_position_updates',engine,index=False,if_exists="replace",schema="metro_api_dev")
     stop_time_df.to_sql('stop_time_updates',engine,index=False,if_exists="replace",schema="metro_api_dev")
     trip_update_df.to_sql('trip_updates',engine,index=False,if_exists="replace",schema="metro_api_dev")
     process_end = timeit.default_timer()
-    logging.info('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
+    # print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
     print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
     
 if __name__ == "__main__":

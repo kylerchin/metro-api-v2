@@ -44,20 +44,22 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
+      - name: Build and push 1-data-loading-service
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: lacmta/metro-api-v2:data-loading-service
+          context: ./data-loading-service/
           build-args: | 
             BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
-      - name: Build and push
+      - name: Build and push 2-fastapi
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: lacmta/metro-api-v2:fastapi
+          context: ./fastapi/
           build-args: | 
             BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
       - name: Push Updated Docker Image on Lightsail

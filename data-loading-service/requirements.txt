@@ -1,13 +1,14 @@
-# # fastapi==0.63.0
-# pydantic==1.8.1
+# fastapi==0.63.0
+pydantic==1.8.1
 # starlette==0.13.6
 # typing-extensions==3.7.4.3
-# requests
-# python-dotenv
+requests
+python-dotenv
 # pytz
 # python-multipart
-# SQLAlchemy
-# psycopg2
+SQLAlchemy
+psycopg2
+schedule
 # python-jose[cryptography]
 # passlib[bcrypt]
 # # GeoAlchemy2
@@ -15,4 +16,4 @@
 # aiofiles
 # jinja2==3.0.3
 # fastapi-restful[tasks]
-# pandas
+pandas

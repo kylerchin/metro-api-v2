@@ -35,12 +35,12 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 # from app.update_canceled_trips import *
 
 from .utils.log_helper import *
-from .utils.gtfs_rt_helper import *
+# from .utils.gtfs_rt_helper import *
 
-from . import crud, models, security, schemas, update_canceled_trips,gtfs_models
+from . import crud, models, security, schemas
 from .database import Session, engine, session, get_db
 from .config import Config
-from .gtfs_rt import *
+# from .gtfs_rt import *
 from pathlib import Path
 
 from logzio.handler import LogzioHandler

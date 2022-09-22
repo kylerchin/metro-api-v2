@@ -1,14 +1,6 @@
 import os
 from dotenv import load_dotenv
 
-from .utils.log_helper import *
-from . import *
-try:
-    load_dotenv('.env')
-    logger.info('Environment variables loaded from .env file')
-except Exception as e:
-    logger.exception('Environment variables not loaded from .env file: ' + str(e))
-
 class Config:
     BASE_URL = "https://api.metro.net"
     DB_URI = os.environ.get('URI')
@@ -24,7 +16,7 @@ class Config:
     DEBUG = True
     REPODIR = "/gtfs_rail"
     CURRENT_VERSION = "2.0.13"
-    API_LAST_UPDATE_TIME = os.path.getmtime(r'app/main.py')
+    # API_LAST_UPDATE_TIME = os.path.getmtime(r'main.py')
     LOGZIO_TOKEN = os.environ.get('LOGZIO_TOKEN')
     LOGZIO_URL = os.environ.get('LOGZIO_URL')
     RUNNING_ENV = os.environ.get('RUNNING_ENV')

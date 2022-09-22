@@ -4,8 +4,8 @@ from sqlalchemy import create_engine,MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from .config import Config
-from .utils.log_helper import *
+from ..config import Config
+# from .utils.log_helper import *
 
 engine = create_engine(Config.DB_URI, echo=False)
 
@@ -18,7 +18,7 @@ Base = declarative_base(metadata=MetaData(schema="metro_api_dev"))
 def get_db():
     db = Session()
     try:
-        logger.info('Connected to the database')
+        print('Connected to the database')
         yield db
     finally:
         db.close()
