@@ -1,6 +1,6 @@
 import os, ftplib
 
-from .log_helper import *
+# from .log_helper import *
 
 ftp_client = None
 ftp_server = ''
@@ -15,12 +15,12 @@ def connect_to_ftp(remote_dir, server, user, pw):
 	login_result = ftp_client.login(user, pw)
 	
 	if '230' in login_result:
-		logger.info("Successfully connected to " + server)
+		print("Successfully connected to " + server)
 		ftp_client.cwd(remote_dir)
-		logger.info("In remote directory: " + ftp_client.pwd())
+		print("In remote directory: " + ftp_client.pwd())
 		return True
 	else:
-		logger.error("Failed to connect to " + server)
+		print("Failed to connect to " + server)
 		return False
 	#ftp.retrlines("LIST")
 
@@ -29,20 +29,20 @@ def get_file_from_ftp(file, local_dir):
 	for filename in ftp_client.nlst(file): # Loop - looking for matching files
 		if filename == file:
 			fhandle = open(local_dir + filename, 'wb')
-			logger.info('Opening remote file: ' + filename) #for comfort sake, shows the file that's being retrieved
+			print('Opening remote file: ' + filename) #for comfort sake, shows the file that's being retrieved
 			transfer_result = ftp_client.retrbinary('RETR ' + filename, fhandle.write)
 			file_modified_time = os.path.getmtime(local_dir + filename)
-			logger.info('File modified time: ' + str(file_modified_time))
+			print('File modified time: ' + str(file_modified_time))
 			
 			if '226' in transfer_result:
-				logger.info('Transfer complete: ' + local_dir + filename)
+				print('Transfer complete: ' + local_dir + filename)
 				fhandle.close()
 				return True
 			else:
-				logger.info('Transfer failed: ' + transfer_result)
+				print('Transfer failed: ' + transfer_result)
 				fhandle.close()
 				return False
 
 def disconnect_from_ftp():
 	ftp_client.quit()
-	logger.info("Disconnected from " + ftp_server)
+	print("Disconnected from " + ftp_server)

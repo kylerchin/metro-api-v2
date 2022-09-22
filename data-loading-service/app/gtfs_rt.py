@@ -5,7 +5,7 @@ import json, requests
 from fastapi import HTTPException
 
 from .utils.log_helper import *
-
+from sqlalchemy.orm import sessionmaker
 SWIFTLY_API_REALTIME = 'https://api.goswift.ly/real-time/'
 
 SERVICE_DICT = {

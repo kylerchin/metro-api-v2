@@ -35,11 +35,12 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 # from app.update_canceled_trips import *
 
 from .utils.log_helper import *
+# from .utils.gtfs_rt_helper import *
 
-from . import crud, models, security, schemas, update_canceled_trips
+from . import crud, models, security, schemas
 from .database import Session, engine, session, get_db
 from .config import Config
-from .gtfs_rt import *
+# from .gtfs_rt import *
 from pathlib import Path
 
 from logzio.handler import LogzioHandler
@@ -221,20 +222,29 @@ async def get_time():
     return {current_time}
 
 
-@app.get("/trip_updates/{service}")
-async def trip_updates(service, output_format: Optional[str] = None):
-    result = None
-    valid_formats = ["json"]
-
-    if output_format:
-        if output_format in valid_formats:
-            result = get_trip_updates(service, output_format)
-            return result
-        else:
-            raise HTTPException(status_code=400, detail="Invalid format")
+@app.get("/{agency_id}/trip_updates/{trip_id}")
+async def trip_updates(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
+    if agency_id == "LACMTA":
+        result = crud.get_bus_stop_times_by_trip_id(db,trip_id)
+        return result
+    elif agency_id == "LACMTA_Rail":
+        pass
     else:
-        result = get_trip_updates(service, '')
-        return Response(content=result, media_type="application/x-protobuf")
+        return {"error":"agency_id"}
+
+@app.get("/{agency_id}/vehicle_positions/{vehicle_id}")
+async def vehicle_position_updates(agency_id,vehicle_id=Optional[str],db: Session = Depends(get_db)):
+    if agency_id == "LACMTA":
+        result = crud.get_gtfs_rt_vehicle_positions_by_vehicle_id(db,vehicle_id)
+        return result
+
+    elif agency_id == "LACMTA_Rail":
+        pass
+    else:
+        return {"error":"agency_id"}
+
+
+
 
 @app.get("/vehicle_positions/{service}")
 async def vehicle_positions(service, output_format: Optional[str] = None):
@@ -319,10 +329,10 @@ class LogFilter(logging.Filter):
         record.env = Config.RUNNING_ENV
         return True
 
-@app.on_event("startup")
-@repeat_every(seconds=UPDATE_INTERVAL)
-async def startup_event_ftp():
-    update_canceled_trips.run_update()
+# @app.on_event("startup")
+# @repeat_every(seconds=UPDATE_INTERVAL)
+# async def startup_event_ftp():
+#     update_canceled_trips.run_update()
 
 @app.on_event("startup")
 async def startup_event():

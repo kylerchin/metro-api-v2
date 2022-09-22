@@ -5,3 +5,4 @@ docker-compose.yml
 sandbox/
 app/secrets.py
 **/secrets.py
+fastapi/app/secrets.py

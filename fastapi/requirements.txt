@@ -11,7 +11,9 @@ SQLAlchemy
 psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
-aiofiles
 # GeoAlchemy2
-jinja2
+logzio-python-handler
+aiofiles
+jinja2==3.0.3
 fastapi-restful[tasks]
+pandas

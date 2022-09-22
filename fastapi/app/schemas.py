@@ -93,3 +93,39 @@ class Shapes(BaseModel):
     shape_pt_lat: float
     shape_pt_lon: float
     shape_pt_sequence: int
+
+class TripUpdates(BaseModel):
+    trip_id: str
+    route_id: str
+    start_time: str
+    start_date: str
+    schedule_relationship: str
+    direction_id: int
+    timestamp: int
+    # StopTimeUpdates = Json
+
+class StopTimeUpdates(BaseModel):
+    stop_sequence: int
+    stop_id: str
+    schedule_relationship: str
+    # oid: int
+    # trip_update_id: int
+
+class VehiclePositions(BaseModel):
+    current_stop_sequence: int
+    current_status: str
+    timestamp: int
+    stop_id = str
+    trip_id = str
+    trip_start_date = str
+    trip_route_id = str
+
+    position_latitude = float
+    position_longitude = float
+    position_bearing = float
+    position_speed = float
+
+    vehicle_id = str
+    vehicle_label = str
+    id = int
+    timestamp = int

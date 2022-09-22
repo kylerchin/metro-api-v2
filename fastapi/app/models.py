@@ -68,4 +68,3 @@ class Shapes(Base):
     shape_pt_lat = Column(Float)
     shape_pt_lon = Column(Float)
     shape_pt_sequence = Column(Integer)
-    

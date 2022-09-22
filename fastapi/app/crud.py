@@ -9,7 +9,9 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import aliased
 
-from . import models, schemas
+from app import gtfs_models
+
+from . import models, schemas,gtfs_models
 from .config import Config
 from .database import Session,get_db
 from .utils.log_helper import *
@@ -30,6 +32,20 @@ def get_bus_stop_times_by_trip_id(db, trip_id: str):
     the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id).all()
     # user_dict = models.User[username]route_code
     # return schemas.UserInDB(**user_dict)
+    return the_query
+
+def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str):
+    if trip_id is None:
+        the_query = db.query(gtfs_models.StopTimeUpdate).all()
+    else:
+        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id).all()
+    return the_query
+    
+def get_gtfs_rt_vehicle_positions_by_vehicle_id(db, vehicle_id: str):
+    if vehicle_id is None:
+        the_query = db.query(gtfs_models.VehiclePosition).all()
+    else:
+        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id).all()
     return the_query
 
 def get_bus_stops(db, stop_code: int):
