@@ -329,16 +329,10 @@ class LogFilter(logging.Filter):
         record.env = Config.RUNNING_ENV
         return True
 
-@app.on_event("startup")
-@repeat_every(seconds=UPDATE_INTERVAL)
-async def startup_event_ftp():
-    update_canceled_trips.run_update()
-
-
-@app.on_event("startup")
-@repeat_every(seconds=15)
-async def update_gtfs_rt_db():
-    update_gtfs_realtime_data()
+# @app.on_event("startup")
+# @repeat_every(seconds=UPDATE_INTERVAL)
+# async def startup_event_ftp():
+#     update_canceled_trips.run_update()
 
 @app.on_event("startup")
 async def startup_event():
