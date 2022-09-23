@@ -20,7 +20,7 @@ SWIFTLY_GTFS_RT_VEHICLE_POSITIONS = 'gtfs-rt-vehicle-positions'
 # Swiftly API endpoint format:
 # SWIFTLY_API_REALTIME + SERVICE_* + SWIFTLY_GTFS_RT_* + FORMAT
 
-TARGET_FOLDER = 'app/data/'
+TARGET_FOLDER = 'appdata/'
 
 def connect_to_swiftly(service, endpoint, output_file, output_format):
     swiftly_endpoint = ''

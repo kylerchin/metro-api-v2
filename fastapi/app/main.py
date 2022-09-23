@@ -47,8 +47,8 @@ from logzio.handler import LogzioHandler
 from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
-PATH_TO_CALENDAR_JSON = 'app/data/calendar_dates.json'
-PATH_TO_CANCELED_JSON = 'app/data/CancelledTripsRT.json'
+PATH_TO_CALENDAR_JSON = 'appdata/calendar_dates.json'
+PATH_TO_CANCELED_JSON = 'appdata/CancelledTripsRT.json'
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -80,14 +80,14 @@ def csv_to_json(csvFilePath, jsonFilePath):
         jsonf.write(jsonString)
           
 csvFilePath = r'data.csv'
-jsonFilePath = r'app/data/calendar_dates.json'
+jsonFilePath = r'appdata/calendar_dates.json'
 
 
 lactmta_gtfs_rt_url = "https://lacmta.github.io/lacmta-gtfs/data/calendar_dates.txt"
 response = requests.get(lactmta_gtfs_rt_url)
 
 cr = csv.reader(response.text.splitlines())
-csv_to_json(cr,jsonFilePath)
+# csv_to_json(cr,jsonFilePath)
 
 app = FastAPI()
 
