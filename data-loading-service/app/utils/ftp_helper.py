@@ -1,4 +1,4 @@
-import os, ftplib
+import os, ftplib, posixpath
 
 # from .log_helper import *
 
@@ -28,7 +28,9 @@ def get_file_from_ftp(file, local_dir):
 	global file_modified_time
 	for filename in ftp_client.nlst(file): # Loop - looking for matching files
 		if filename == file:
-			fhandle = open(local_dir + filename, 'wb')
+			write_path = posixpath.join(local_dir,file)
+			real_write_path = os.path.realpath(write_path)
+			fhandle = open(real_write_path, 'wb')
 			print('Opening remote file: ' + filename) #for comfort sake, shows the file that's being retrieved
 			transfer_result = ftp_client.retrbinary('RETR ' + filename, fhandle.write)
 			# file_modified_time = os.path.getmtime(local_dir + filename)
