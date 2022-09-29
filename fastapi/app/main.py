@@ -52,13 +52,13 @@ UPDATE_INTERVAL = 300
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-# LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
 PARENT_FOLDER = os.path.split(os.getcwd())[0]
 TARGET_FOLDER = 'appdata'
 TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
-LOCALPATH = os.path.realpath(TARGET_PATH)
-PATH_TO_CALENDAR_JSON = LOCALPATH+'calendar_dates.json'
-PATH_TO_CANCELED_JSON = LOCALPATH+'CancelledTripsRT.json'
+TARGET_PATH_CALENDAR_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'calendar.json')
+TARGET_PATH_CANCELED_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'CancelledTripsRT.json')
+PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
+PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
 models.Base.metadata.create_all(bind=engine)
 
