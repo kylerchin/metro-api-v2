@@ -4,7 +4,7 @@ import utils.gtfs_rt_helper as gtfs_rt_helper
 import threading
 import time
 from schedule import every, repeat, run_pending
-import schedule
+# import schedule
 
 # UPDATE_INTERVAL = 5
 
