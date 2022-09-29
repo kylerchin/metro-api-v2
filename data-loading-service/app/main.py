@@ -21,13 +21,13 @@ def canceled_trips_update_scheduler():
     except Exception as e:
         print('Error updating canceled trips: ' + str(e))
 
-# def initial_load():
-#     update_canceled_trips.run_update()
-#     gtfs_rt_helper.update_gtfs_realtime_data()
+def initial_load():
+    update_canceled_trips.run_update()
+    # gtfs_rt_helper.update_gtfs_realtime_data()
         
 if __name__ == '__main__':
-    # initial_load()
+    initial_load()
     # if Config.RUNNING_ENV == "prod" or Config.RUNNING_ENV.contains("local"):
-    while True:
-        run_pending()
+    # while True:
+    #     run_pending()
     
