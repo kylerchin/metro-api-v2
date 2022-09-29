@@ -4,7 +4,9 @@ import http
 import json
 import requests
 import csv
-import os 
+import os
+import posixpath
+
 
 import pytz
 
@@ -47,8 +49,16 @@ from logzio.handler import LogzioHandler
 from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
-PATH_TO_CALENDAR_JSON = os.path.split(os.getcwd())[0]+'/appdata/calendar_dates.json'
-PATH_TO_CANCELED_JSON = os.path.split(os.getcwd())[0]+'/appdata/CancelledTripsRT.json'
+
+TARGET_FILE = "CancelledTripsRT.json"
+REMOTEPATH = '/nextbus/prod/'
+# LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
+PARENT_FOLDER = os.path.split(os.getcwd())[0]
+TARGET_FOLDER = 'appdata'
+TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
+LOCALPATH = os.path.realpath(TARGET_PATH)
+PATH_TO_CALENDAR_JSON = LOCALPATH+'calendar_dates.json'
+PATH_TO_CANCELED_JSON = LOCALPATH+'CancelledTripsRT.json'
 
 models.Base.metadata.create_all(bind=engine)
 
