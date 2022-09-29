@@ -47,8 +47,8 @@ from logzio.handler import LogzioHandler
 from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
-PATH_TO_CALENDAR_JSON = '../appdata/calendar_dates.json'
-PATH_TO_CANCELED_JSON = '../appdata/CancelledTripsRT.json'
+PATH_TO_CALENDAR_JSON = os.path.split(os.getcwd())[0]+'/appdata/calendar_dates.json'
+PATH_TO_CANCELED_JSON = os.path.split(os.getcwd())[0]+'/appdata/CancelledTripsRT.json'
 
 models.Base.metadata.create_all(bind=engine)
 
