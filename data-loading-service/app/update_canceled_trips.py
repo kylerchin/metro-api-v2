@@ -4,7 +4,7 @@ from utils.ftp_helper import *
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-LOCALPATH = '../../appdata/'
+LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
 # ftp_json_file_time = ''
 
 def run_update():
