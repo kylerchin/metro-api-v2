@@ -4,7 +4,7 @@ import utils.gtfs_rt_helper as gtfs_rt_helper
 import threading
 import time
 from schedule import every, repeat, run_pending
-# import schedule
+import schedule
 
 # UPDATE_INTERVAL = 5
 
@@ -34,7 +34,7 @@ def initial_data_loading():
     gtfs_rt_helper.update_gtfs_realtime_data()
         
 if __name__ == '__main__':
-    initial_run()
+    initial_data_loading()
     while True:
         run_pending()
     # schedule.every().second.do(background_job('canceled_trips'))
