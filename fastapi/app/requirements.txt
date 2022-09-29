@@ -16,4 +16,3 @@ aiofiles
 jinja2
 fastapi-restful[tasks]
 pandas
-protobuf==3.19.*

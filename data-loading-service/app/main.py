@@ -20,7 +20,7 @@ import schedule
 #     continuous_thread.start()
 #     return cease_continuous_run
 
-@repeat(every(20).seconds)
+@repeat(every(60).seconds)
 def gtfs_rt_scheduler():
     gtfs_rt_helper.update_gtfs_realtime_data()
 
@@ -31,7 +31,7 @@ def canceled_trips_update_scheduler():
 def initial_data_loading():
     print('initial run started at ' + str(time.time()))
     update_canceled_trips.run_update()
-    gtfs_rt_helper.update_gtfs_realtime_data()
+    # gtfs_rt_helper.update_gtfs_realtime_data()
         
 if __name__ == '__main__':
     initial_data_loading()
