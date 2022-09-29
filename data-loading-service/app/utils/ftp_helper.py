@@ -31,8 +31,8 @@ def get_file_from_ftp(file, local_dir):
 			fhandle = open(local_dir + filename, 'wb')
 			print('Opening remote file: ' + filename) #for comfort sake, shows the file that's being retrieved
 			transfer_result = ftp_client.retrbinary('RETR ' + filename, fhandle.write)
-			file_modified_time = os.path.getmtime(local_dir + filename)
-			print('File modified time: ' + str(file_modified_time))
+			# file_modified_time = os.path.getmtime(local_dir + filename)
+			# print('File modified time: ' + str(file_modified_time))
 			
 			if '226' in transfer_result:
 				print('Transfer complete: ' + local_dir + filename)
