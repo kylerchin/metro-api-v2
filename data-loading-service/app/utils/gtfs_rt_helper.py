@@ -24,7 +24,7 @@ from .database_connector import Session,get_db
 
 # from ..schemas import TripUpdates, StopTimeUpdates,VehiclePositions
 from datetime import datetime
-import pandas as pd
+# import pandas as pd
 
 API_URL = 'https://api.metro.net/'
 VEHICLE_POSITIONS_ENDPOINT = API_URL + 'vehicle_positions/bus?output_format=json'
