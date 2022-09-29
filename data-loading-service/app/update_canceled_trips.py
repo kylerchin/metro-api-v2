@@ -2,12 +2,14 @@ from config import Config
 from utils.ftp_helper import *
 import os
 import posixpath
+from pathlib import Path
+
 # from .utils.log_helper import *
 
+PARENT_FOLDER = Path(__file__).parents[2]
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
 # LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
-PARENT_FOLDER = os.path.split(os.getcwd())[0]
 TARGET_FOLDER = 'appdata'
 TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
 LOCALPATH = os.path.realpath(TARGET_PATH)
