@@ -6,8 +6,7 @@ from cgi import print_arguments
 import datetime
 from multiprocessing.resource_sharer import stop
 
-from ..gtfs_models import *
-from ..gtfs_rt import *
+# from ..gtfs_rt import *
 # from ..models import *
 
 import json
@@ -17,14 +16,13 @@ import timeit
 from datetime import datetime
 from sqlalchemy.orm import Session,sessionmaker
 from sqlalchemy import create_engine, inspect
-from ..models.gtfs_rt import gtfs_rt
-from app.config import Config
+from models.gtfs_rt import *
+from config import Config
 
-from .gtfs_realtime_pb2 import FeedMessage
+from utils.gtfs_realtime_pb2 import FeedMessage
 from .database_connector import Session,get_db
 
 # from ..schemas import TripUpdates, StopTimeUpdates,VehiclePositions
-from ..config import Config
 from datetime import datetime
 import pandas as pd
 
@@ -45,6 +43,11 @@ Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 insp = inspect(engine)
 session = Session()
+
+SERVICE_DICT = {
+    'bus': 'lametro',
+    'rail': 'lametro-rail'
+}
 
 # Connect to the database
 def connect_to_db():

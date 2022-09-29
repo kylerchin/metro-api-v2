@@ -4,7 +4,7 @@ from sqlalchemy import create_engine,MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from ..config import Config
+from config import Config
 # from .utils.log_helper import *
 
 engine = create_engine(Config.DB_URI, echo=False)
