@@ -6,7 +6,7 @@ from pathlib import Path
 
 # from .utils.log_helper import *
 
-PARENT_FOLDER = Path(__file__).parents[2]
+PARENT_FOLDER = Path(__file__).parents[3]
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
 # LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
