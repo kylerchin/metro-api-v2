@@ -46,7 +46,7 @@ from .config import Config
 from pathlib import Path
 
 
-# from logzio.handler import LogzioHandler
+from logzio.handler import LogzioHandler
 # from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
