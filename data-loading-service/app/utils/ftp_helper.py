@@ -30,6 +30,7 @@ def get_file_from_ftp(file, local_dir):
 		if filename == file:
 			write_path = posixpath.join(local_dir,file)
 			real_write_path = os.path.realpath(write_path)
+			print('real_write_path: ' + real_write_path)
 			if not os.path.exists(local_dir):
 				os.mkdir(local_dir)
 			fhandle = open(real_write_path, 'wb')
@@ -39,7 +40,7 @@ def get_file_from_ftp(file, local_dir):
 			# print('File modified time: ' + str(file_modified_time))
 			
 			if '226' in transfer_result:
-				print('Transfer complete: ' + local_dir + filename)
+				print('Transfer complete: ' + real_write_path)
 				fhandle.close()
 				return True
 			else:
