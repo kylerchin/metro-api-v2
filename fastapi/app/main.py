@@ -53,7 +53,7 @@ UPDATE_INTERVAL = 300
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-PARENT_FOLDER = Path(__file__).parents[3]
+PARENT_FOLDER = Path(__file__).parents[2]
 TARGET_FOLDER = 'appdata'
 TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
 TARGET_PATH_CALENDAR_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'calendar.json')
