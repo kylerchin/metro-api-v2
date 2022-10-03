@@ -11,6 +11,7 @@ from multiprocessing.resource_sharer import stop
 
 import json
 import requests
+import pandas as pd
 
 import timeit
 from datetime import datetime
@@ -24,7 +25,7 @@ from .database_connector import Session,get_db
 
 # from ..schemas import TripUpdates, StopTimeUpdates,VehiclePositions
 from datetime import datetime
-import pandas as pd
+
 
 API_URL = 'https://api.metro.net/'
 VEHICLE_POSITIONS_ENDPOINT = API_URL + 'vehicle_positions/bus?output_format=json'
