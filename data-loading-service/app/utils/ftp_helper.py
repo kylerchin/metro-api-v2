@@ -30,6 +30,8 @@ def get_file_from_ftp(file, local_dir):
 		if filename == file:
 			write_path = posixpath.join(local_dir,file)
 			real_write_path = os.path.realpath(write_path)
+			if not os.path.exists(local_dir):
+				os.mkdir(local_dir)
 			fhandle = open(real_write_path, 'wb')
 			print('Opening remote file: ' + filename) #for comfort sake, shows the file that's being retrieved
 			transfer_result = ftp_client.retrbinary('RETR ' + filename, fhandle.write)
