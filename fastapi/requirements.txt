@@ -16,6 +16,6 @@ logzio-python-handler
 aiofiles
 jinja2==3.0.3
 fastapi-restful[tasks]
-pandas
+# pandas
 google
-protobuf==3.20.*
+protobuf==3.19.6
