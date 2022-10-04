@@ -29,7 +29,7 @@ def get_path(target_file):
     for path, dirs, files in os.walk('.'):
         if target_file in files:
             os.chdir(path)
-            return path
+            return os.path.realpath(path)
 
 def get_file_from_ftp(file):
 	global file_modified_time

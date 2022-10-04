@@ -65,7 +65,7 @@ def get_path(target_file):
     for path, dirs, files in os.walk('.'):
         if target_file in files:
             os.chdir(path)
-            return path
+            return os.path.realpath(path)
 
 models.Base.metadata.create_all(bind=engine)
 
