@@ -1,18 +1,17 @@
 from config import Config
 from utils.ftp_helper import *
 import os
-import posixpath
 from pathlib import Path
 
 # from .utils.log_helper import *
 
-PARENT_FOLDER = Path(__file__).parents[1]
+# PARENT_FOLDER = Path(__file__).parents[1]
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
 # LOCALPATH = os.path.split(os.getcwd())[0]+'/appdata/'
 TARGET_FOLDER = 'appdata'
-TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
-LOCALPATH = os.path.realpath(TARGET_PATH)
+# TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
+LOCALPATH = os.path.realpath(TARGET_FOLDER)
 # ftp_json_file_time = ''
 
 def run_update():
