@@ -52,11 +52,11 @@ UPDATE_INTERVAL = 300
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-PARENT_FOLDER = Path(__file__).parents[1]
+# PARENT_FOLDER = Path(__file__).parents[1]
 TARGET_FOLDER = 'appdata'
-TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
-TARGET_PATH_CALENDAR_JSON = os.path.join(PARENT_FOLDER,TARGET_FOLDER,'calendar.json')
-TARGET_PATH_CANCELED_JSON = os.path.join(PARENT_FOLDER,TARGET_FOLDER,'CancelledTripsRT.json')
+# TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
+TARGET_PATH_CALENDAR_JSON = os.path.join(TARGET_FOLDER,'calendar.json')
+TARGET_PATH_CANCELED_JSON = os.path.join(TARGET_FOLDER,'CancelledTripsRT.json')
 PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
 PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
@@ -171,6 +171,7 @@ def standardize_string(input_string):
 @app.get("/canceled_service_summary")
 async def get_canceled_trip_summary():
     canceled_json_file = Path(PATH_TO_CANCELED_JSON)
+    print(canceled_json_file)
     if not canceled_json_file.exists():
         canceled_json_file.touch()
 
