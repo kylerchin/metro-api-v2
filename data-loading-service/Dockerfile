@@ -15,7 +15,6 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 # 
 
 COPY ./app /app
-COPY ../appdata ../appdata
 # COPY .git /code/.git
 # 
 CMD ["python","app/main.py"]
