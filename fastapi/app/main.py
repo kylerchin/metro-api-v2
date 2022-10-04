@@ -65,7 +65,7 @@ def get_path(target_file):
     for path, dirs, files in os.walk('.'):
         if target_file in files:
             print('os.path.realpath(path)  =='+os.path.realpath(path))
-            the_path = posixpath.join(os.path.realpath(path),target_file)
+            the_path = os.path.join(os.path.realpath(path),target_file)
             return os.path.realpath(the_path)
 
 models.Base.metadata.create_all(bind=engine)
@@ -181,7 +181,7 @@ async def get_canceled_trip_summary():
     # canceled_json_file = Path(PATH_TO_CANCELED_JSON)
     # if not CALENDAR_JSON_FILE.exists():
     #     CALENDAR_JSON_FILE.touch()
-
+    print('CALENDAR_JSON_FILE____'+CALENDAR_JSON_FILE)
     with open(CALENDAR_JSON_FILE, 'r') as file:
         canceled_trips = json.loads(file.read() or 'null')
         
