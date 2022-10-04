@@ -28,7 +28,8 @@ def connect_to_ftp(remote_dir, server, user, pw):
 def get_path(target_file):
     for path, dirs, files in os.walk('.'):
         if target_file in files:
-            os.chdir(path)
+            # os.chdir(path)
+            # the_path = posixpath.join(os.path.realpath(path))
             return os.path.realpath(path)
 
 def get_file_from_ftp(file):

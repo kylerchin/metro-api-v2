@@ -64,8 +64,9 @@ TARGET_FOLDER = 'appdata'
 def get_path(target_file):
     for path, dirs, files in os.walk('.'):
         if target_file in files:
-            os.chdir(path)
-            return os.path.realpath(path)
+            print('os.path.realpath(path)  =='+os.path.realpath(path))
+            the_path = posixpath.join(os.path.realpath(path),target_file)
+            return os.path.realpath(the_path)
 
 models.Base.metadata.create_all(bind=engine)
 
