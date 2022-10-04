@@ -50,18 +50,22 @@ from logzio.handler import LogzioHandler
 # from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
-
+currentDirectory = os.getcwd()
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-PARENT_FOLDER = Path(__file__).parents[2]
+# PARENT_FOLDER = Path(currentDirectory).parents[1]
 TARGET_FOLDER = 'appdata'
-TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
-TARGET_PATH_CALENDAR_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'calendar.json')
-TARGET_PATH_CANCELED_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'CancelledTripsRT.json')
-PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
-PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
+# TARGET_PATH = posixpath.join(PARENT_FOLDER,TARGET_FOLDER)
+# TARGET_PATH_CALENDAR_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'calendar.json')
+# TARGET_PATH_CANCELED_JSON = posixpath.join(PARENT_FOLDER,TARGET_FOLDER,'CancelledTripsRT.json')
+# PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
+# PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
-
+def get_path(target_file):
+    for path, dirs, files in os.walk('.'):
+        if target_file in files:
+            os.chdir(path)
+            return path
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -162,7 +166,8 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 
 @app.get("/calendar_dates")
 async def get_calendar_dates():
-    with open(PATH_TO_CALENDAR_JSON, 'r') as file:
+    CALENDAR_JSON_FILE = get_path('calendar.json')
+    with open(CALENDAR_JSON_FILE, 'r') as file:
         calendar_dates = json.loads(file.read())
         return {"calendar_dates":calendar_dates}
 
@@ -171,11 +176,12 @@ def standardize_string(input_string):
 
 @app.get("/canceled_service_summary")
 async def get_canceled_trip_summary():
-    canceled_json_file = Path(PATH_TO_CANCELED_JSON)
-    if not canceled_json_file.exists():
-        canceled_json_file.touch()
+    CALENDAR_JSON_FILE = get_path('CancelledTripsRT.json')
+    # canceled_json_file = Path(PATH_TO_CANCELED_JSON)
+    # if not CALENDAR_JSON_FILE.exists():
+    #     CALENDAR_JSON_FILE.touch()
 
-    with open(canceled_json_file, 'r') as file:
+    with open(CALENDAR_JSON_FILE, 'r') as file:
         canceled_trips = json.loads(file.read() or 'null')
         
     if canceled_trips is None:
@@ -194,7 +200,7 @@ async def get_canceled_trip_summary():
                 else:
                     canceled_trips_summary[route_number] += 1
                 total_canceled_trips += 1
-        ftp_json_file_time = os.path.getmtime(PATH_TO_CANCELED_JSON)
+        ftp_json_file_time = os.path.getmtime(CALENDAR_JSON_FILE)
         logger.info('file modified: ' + str(ftp_json_file_time))
         modified_time = datetime.fromtimestamp((ftp_json_file_time)).astimezone(pytz.timezone("America/Los_Angeles"))
         formatted_modified_time = modified_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -204,7 +210,8 @@ async def get_canceled_trip_summary():
 
 @app.get("/canceled_service/line/{line}")
 async def get_canceled_trip(line):
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
+    CALENDAR_JSON_FILE = get_path('CancelledTripsRT.json')
+    with open(CALENDAR_JSON_FILE, 'r') as file:
         cancelled_service_json = json.loads(file.read())
         canceled_service = []
         for row in cancelled_service_json["CanceledService"]:
@@ -222,7 +229,8 @@ async def get_canceled_trip(line):
 
 @app.get("/canceled_service/all")
 async def get_canceled_trip():
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
+    CALENDAR_JSON_FILE = get_path('CancelledTripsRT.json')
+    with open(CALENDAR_JSON_FILE, 'r') as file:
         cancelled_service_json = json.loads(file.read())
         canceled_service = cancelled_service_json["CanceledService"]
         return {"canceled_data":canceled_service}
