@@ -37,7 +37,6 @@ def initial_load():
         
 if __name__ == '__main__':
     initial_load()
-    if (Config.RUNNING_ENV == "prod") or (Config.RUNNING_ENV.contains("local")):
-        while True:
-            run_pending()
+    while True:
+        run_pending()
     
