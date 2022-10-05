@@ -23,7 +23,7 @@ def canceled_trips_update_scheduler():
     except Exception as e:
         print('Error updating canceled trips: ' + str(e))
 
-@repeat(every(15).days)
+@repeat(every(7).days)
 def calendar_dates_update_scheduler():
     try:
         gtfs_static_helper.update_calendar_dates()
