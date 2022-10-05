@@ -13,7 +13,7 @@ name: Deploy Docker Image to Dev AWS Lightsail Container Service
 on:
   push:
     branches: 
-      - dev
+      - main
 
 jobs:
   deploy:
