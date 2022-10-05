@@ -3,8 +3,8 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData
 from sqlalchemy.orm import relationship, backref
-
-GTFSrtBase = declarative_base(metadata=MetaData(schema="metro_api_dev"))
+from config import Config
+GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
 
 # classes for the GTFS-realtime data
 # TripUpdate

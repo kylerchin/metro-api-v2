@@ -13,4 +13,4 @@ session = Session()
 
 def update_calendar_dates():
     calendar_dates_df = pd.read_csv(CALENDAR_DATES_URL)
-    calendar_dates_df.to_sql('calendar_dates',engine,index=False,if_exists="replace",schema="metro_api_dev")
+    calendar_dates_df.to_sql('calendar_dates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)

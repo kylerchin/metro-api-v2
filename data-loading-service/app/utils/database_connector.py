@@ -13,7 +13,7 @@ Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 session = Session()
 
-Base = declarative_base(metadata=MetaData(schema="metro_api_dev"))
+Base = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
 
 def get_db():
     db = Session()

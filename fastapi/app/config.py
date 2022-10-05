@@ -11,6 +11,7 @@ except Exception as e:
 
 class Config:
     BASE_URL = "https://api.metro.net"
+    TARGET_DB_SCHEMA = "metro_api_dev"
     DB_URI = os.environ.get('URI')
     SECRET_KEY = os.environ.get('HASH_KEY')
     ALGORITHM = os.environ.get('HASHING_ALGORITHM')
