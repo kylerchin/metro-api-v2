@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import aliased
+from sqlalchemy import and_
 
 from app import gtfs_models
 
@@ -66,6 +67,18 @@ def get_bus_stops_by_name(db, name: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
+def get_calendar_dates(db):
+    the_query = db.query(models.CalendarDates).all()
+    return the_query
+
+def get_canceled_trips(db, trp_route: str,summary=False):
+    if trp_route is None:
+        if summary is True:
+            the_query = db.query(models.CanceledServices).filter(models.CanceledServices.trp_type == 'REG').all()
+    else:
+        the_query = db.query(models.CanceledServices).filter(and_(models.CanceledServices.trp_route == trp_route),(models.CanceledServices.trp_type == 'REG')).all()
+
+    return the_query
 
 # email verification utils
 
