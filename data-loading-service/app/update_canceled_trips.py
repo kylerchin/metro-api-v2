@@ -39,4 +39,7 @@ def load_canceled_service_into_db(path_to_json_file):
     with open(path_to_json_file) as json_file:
         opened_json_file = json.load(json_file)
     canceled_data_frame = pd.json_normalize(data=opened_json_file['CanceledService'])
+    canceled_data_frame['trp_route'] = canceled_data_frame['trp_route'].str.replace(' ','')
+    canceled_data_frame['dty_number'] = canceled_data_frame['dty_number'].str.replace(' ','')
+    canceled_data_frame['LastUpdateDate'] = canceled_data_frame['LastUpdateDate'].str.split(';').str[0].str.replace('_',' ')
     canceled_data_frame.to_sql('canceled_service',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
