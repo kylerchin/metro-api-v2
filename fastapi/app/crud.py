@@ -63,22 +63,22 @@ def get_gtfs_data(db, tablename,column_name,query):
     
 def get_bus_stops_by_name(db, name: str):
     the_query = db.query(models.Stops).filter(models.Stops.stop_name.contains(name)).all()
-    # user_dict = models.User[username]
-    # return schemas.UserInDB(**user_dict)
     return the_query
 
 def get_calendar_dates(db):
     the_query = db.query(models.CalendarDates).all()
     return the_query
 
-def get_canceled_trips(db, trp_route: str,summary=False):
-    if trp_route is None:
-        if summary is True:
-            the_query = db.query(models.CanceledServices).filter(models.CanceledServices.trp_type == 'REG').all()
+## canceled trips
+
+def get_canceled_trips(db, trp_route: str):
+    if trp_route == 'all':
+        the_query = db.query(models.CanceledServices).filter(models.CanceledServices.trp_type == 'REG').all()
+        return the_query
     else:
         the_query = db.query(models.CanceledServices).filter(and_(models.CanceledServices.trp_route == trp_route),(models.CanceledServices.trp_type == 'REG')).all()
-
-    return the_query
+        return the_query
+    
 
 # email verification utils
 

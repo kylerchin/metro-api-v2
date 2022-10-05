@@ -165,7 +165,7 @@ def standardize_string(input_string):
 
 @app.get("/canceled_service_summary")
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
-    result = crud.get_canceled_trips(db,None,True)
+    result = crud.get_canceled_trips(db,'all')
     canceled_trips_summary = {}
     total_canceled_trips = 0
     canceled_trip_json = jsonable_encoder(result)
@@ -191,15 +191,15 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
 
 @app.get("/canceled_service/line/{line}")
 async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
-    result = crud.get_canceled_trips(db,line,'REG')
+    result = crud.get_canceled_trips(db,line)
     json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/canceled_service/all")
 async def get_canceled_trip(db: Session = Depends(get_db)):
-    result = crud.get_canceled_trips(db,None)
+    result = crud.get_canceled_trips(db,'all')
     json_compatible_item_data = jsonable_encoder(result)
-    return {"CanceledService":JSONResponse(content=json_compatible_item_data)}
+    return JSONResponse(content=json_compatible_item_data)
 
 
 @app.get("/time")
