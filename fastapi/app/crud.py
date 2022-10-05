@@ -8,8 +8,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import aliased
+from sqlalchemy import and_
 
-from . import models, schemas
+from app import gtfs_models
+
+from . import models, schemas,gtfs_models
 from .config import Config
 from .database import Session,get_db
 from .utils.log_helper import *
@@ -32,6 +35,20 @@ def get_bus_stop_times_by_trip_id(db, trip_id: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
+def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str):
+    if trip_id is None:
+        the_query = db.query(gtfs_models.StopTimeUpdate).all()
+    else:
+        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id).all()
+    return the_query
+    
+def get_gtfs_rt_vehicle_positions_by_vehicle_id(db, vehicle_id: str):
+    if vehicle_id is None:
+        the_query = db.query(gtfs_models.VehiclePosition).all()
+    else:
+        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id).all()
+    return the_query
+
 def get_bus_stops(db, stop_code: int):
     the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code).all()
     # user_dict = models.User[username]
@@ -50,6 +67,18 @@ def get_bus_stops_by_name(db, name: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
+def get_calendar_dates(db):
+    the_query = db.query(models.CalendarDates).all()
+    return the_query
+
+def get_canceled_trips(db, trp_route: str,summary=False):
+    if trp_route is None:
+        if summary is True:
+            the_query = db.query(models.CanceledServices).filter(models.CanceledServices.trp_type == 'REG').all()
+    else:
+        the_query = db.query(models.CanceledServices).filter(and_(models.CanceledServices.trp_route == trp_route),(models.CanceledServices.trp_type == 'REG')).all()
+
+    return the_query
 
 # email verification utils
 

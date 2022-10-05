@@ -4,7 +4,8 @@ import http
 import json
 import requests
 import csv
-import os 
+import os
+
 
 import pytz
 
@@ -14,6 +15,7 @@ from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse, HTMLResponse
+from sqlalchemy import false
 
 from sqlalchemy.orm import aliased
 
@@ -32,22 +34,28 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 
 # from app.models import *
 # from app.security import *
-# from app.update_canceled_trips import *
 
 from .utils.log_helper import *
-
-from . import crud, models, security, schemas, update_canceled_trips
+from . import crud, models, security, schemas
 from .database import Session, engine, session, get_db
 from .config import Config
-from .gtfs_rt import *
 from pathlib import Path
 
 from logzio.handler import LogzioHandler
-from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
-PATH_TO_CALENDAR_JSON = 'app/data/calendar_dates.json'
-PATH_TO_CANCELED_JSON = 'app/data/CancelledTripsRT.json'
+
+TARGET_FILE = "CancelledTripsRT.json"
+REMOTEPATH = '/nextbus/prod/'
+PARENT_FOLDER = Path(__file__).parents[1]
+TARGET_FOLDER = 'appdata'
+TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
+TARGET_PATH_CALENDAR_JSON = os.path.join(TARGET_PATH,'calendar.json')
+TARGET_PATH_CANCELED_JSON = os.path.join(TARGET_PATH,'CancelledTripsRT.json')
+PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
+PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
+
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -79,14 +87,14 @@ def csv_to_json(csvFilePath, jsonFilePath):
         jsonf.write(jsonString)
           
 csvFilePath = r'data.csv'
-jsonFilePath = r'app/data/calendar_dates.json'
+jsonFilePath = r'appdata/calendar_dates.json'
 
 
 lactmta_gtfs_rt_url = "https://lacmta.github.io/lacmta-gtfs/data/calendar_dates.txt"
 response = requests.get(lactmta_gtfs_rt_url)
 
 cr = csv.reader(response.text.splitlines())
-csv_to_json(cr,jsonFilePath)
+# csv_to_json(cr,jsonFilePath)
 
 app = FastAPI()
 
@@ -147,31 +155,27 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 #     return {"token": token}
 
 @app.get("/calendar_dates")
-async def get_calendar_dates():
-    with open(PATH_TO_CALENDAR_JSON, 'r') as file:
-        calendar_dates = json.loads(file.read())
-        return {"calendar_dates":calendar_dates}
+async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
+    result = crud.get_calendar_dates(db)
+    calendar_dates = jsonable_encoder(result)
+    return JSONResponse(content={"calendar_dates":calendar_dates})
 
 def standardize_string(input_string):
     return input_string.lower().replace(" ", "")
 
 @app.get("/canceled_service_summary")
-async def get_canceled_trip_summary():
-    canceled_json_file = Path(PATH_TO_CANCELED_JSON)
-    if not canceled_json_file.exists():
-        canceled_json_file.touch()
-
-    with open(canceled_json_file, 'r') as file:
-        canceled_trips = json.loads(file.read() or 'null')
-        
-    if canceled_trips is None:
+async def get_canceled_trip_summary(db: Session = Depends(get_db)):
+    result = crud.get_canceled_trips(db,None,True)
+    canceled_trips_summary = {}
+    total_canceled_trips = 0
+    canceled_trip_json = jsonable_encoder(result)
+    print('result' + str(canceled_trip_json))
+    if canceled_trip_json is None:
         return {"canceled_trips_summary": "",
                 "total_canceled_trips": 0,
                 "last_update": ""}
     else:
-        canceled_trips_summary = {}
-        total_canceled_trips = 0
-        for trip in canceled_trips["CanceledService"]:
+        for trip in canceled_trip_json:
             # route_number = standardize_string(trip["trp_route"])
             route_number = standardize_string(trip["trp_route"])
             if route_number:
@@ -180,39 +184,22 @@ async def get_canceled_trip_summary():
                 else:
                     canceled_trips_summary[route_number] += 1
                 total_canceled_trips += 1
-        ftp_json_file_time = os.path.getmtime(PATH_TO_CANCELED_JSON)
-        logger.info('file modified: ' + str(ftp_json_file_time))
-        modified_time = datetime.fromtimestamp((ftp_json_file_time)).astimezone(pytz.timezone("America/Los_Angeles"))
-        formatted_modified_time = modified_time.strftime('%Y-%m-%d %H:%M:%S')
+        update_time = canceled_trip_json[0]['LastUpdateDate']
         return {"canceled_trips_summary":canceled_trips_summary,
                 "total_canceled_trips":total_canceled_trips,
-                "last_updated":formatted_modified_time}
+                "last_updated":update_time}
 
 @app.get("/canceled_service/line/{line}")
-async def get_canceled_trip(line):
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
-        cancelled_service_json = json.loads(file.read())
-        canceled_service = []
-        for row in cancelled_service_json["CanceledService"]:
-            if row["trp_type"] == "REG" and standardize_string(row["trp_route"]) == line:
-                canceled_service.append(schemas.CanceledServiceData(
-                                                    gtfs_trip_id=row["m_gtfs_trip_id"],
-                                                    trip_route=standardize_string(row["trp_route"]),
-                                                    stop_description_first=row["stop_description_first"],
-                                                    stop_description_last=row["stop_description_last"],
-                                                    trip_time_start=row["trp_time_start"],
-                                                    trip_time_end=row["trp_time_end"],
-                                                    trip_direction=row["trp_direction"]                                                    
-                                                    ))
-    return {"canceled_data":canceled_service}
+async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
+    result = crud.get_canceled_trips(db,line,'REG')
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/canceled_service/all")
-async def get_canceled_trip():
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
-        cancelled_service_json = json.loads(file.read())
-        canceled_service = cancelled_service_json["CanceledService"]
-        return {"canceled_data":canceled_service}
-
+async def get_canceled_trip(db: Session = Depends(get_db)):
+    result = crud.get_canceled_trips(db,None)
+    json_compatible_item_data = jsonable_encoder(result)
+    return {"CanceledService":JSONResponse(content=json_compatible_item_data)}
 
 
 @app.get("/time")
@@ -221,20 +208,29 @@ async def get_time():
     return {current_time}
 
 
-@app.get("/trip_updates/{service}")
-async def trip_updates(service, output_format: Optional[str] = None):
-    result = None
-    valid_formats = ["json"]
-
-    if output_format:
-        if output_format in valid_formats:
-            result = get_trip_updates(service, output_format)
-            return result
-        else:
-            raise HTTPException(status_code=400, detail="Invalid format")
+@app.get("/{agency_id}/trip_updates/{trip_id}")
+async def trip_updates(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
+    if agency_id == "LACMTA":
+        result = crud.get_bus_stop_times_by_trip_id(db,trip_id)
+        return result
+    elif agency_id == "LACMTA_Rail":
+        pass
     else:
-        result = get_trip_updates(service, '')
-        return Response(content=result, media_type="application/x-protobuf")
+        return {"error":"agency_id"}
+
+@app.get("/{agency_id}/vehicle_positions/{vehicle_id}")
+async def vehicle_position_updates(agency_id,vehicle_id=Optional[str],db: Session = Depends(get_db)):
+    if agency_id == "LACMTA":
+        result = crud.get_gtfs_rt_vehicle_positions_by_vehicle_id(db,vehicle_id)
+        return result
+
+    elif agency_id == "LACMTA_Rail":
+        pass
+    else:
+        return {"error":"agency_id"}
+
+
+
 
 @app.get("/vehicle_positions/{service}")
 async def vehicle_positions(service, output_format: Optional[str] = None):
@@ -318,11 +314,6 @@ class LogFilter(logging.Filter):
         record.app = "api.metro.net"
         record.env = Config.RUNNING_ENV
         return True
-
-@app.on_event("startup")
-@repeat_every(seconds=UPDATE_INTERVAL)
-async def startup_event_ftp():
-    update_canceled_trips.run_update()
 
 @app.on_event("startup")
 async def startup_event():
