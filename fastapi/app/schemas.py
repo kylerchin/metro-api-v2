@@ -111,6 +111,38 @@ class StopTimeUpdates(BaseModel):
     # oid: int
     # trip_update_id: int
 
+class CanceledServices(BaseModel):
+    dpce_date: str
+    dpce_assign_id: str
+    dpce_block_disp: str
+    pce_time_start: str
+    pce_time_end: str
+    pce_duration: str
+    dpce_reason_canc: str
+    pce_commentary: str
+    trp_number: str
+    trp_int_number: str
+    m_metro_export_trip_id: str
+    m_gtfs_trip_id: str
+    trp_route: str
+    trp_direction: str
+    trp_type: str
+    stop_description_first: str
+    trp_time_start: str
+    trp_time_end: str
+    stop_description_last: str
+    trp_block: str
+    trp_duration: str
+    trp_distance: str
+    dty_number: str
+    pce_number: str
+    dty_type: str
+    oa_pce_orb_number: str
+    blk_orb_number: str
+    trp_time_start_hour: str
+    CostCenter: str
+    blk_garage: str
+    LastUpdateDate: str
 class VehiclePositions(BaseModel):
     current_stop_sequence: int
     current_status: str
@@ -129,3 +161,8 @@ class VehiclePositions(BaseModel):
     vehicle_label = str
     id = int
     timestamp = int
+
+class CalenderDates(BaseModel):
+    service_id: str
+    date: str
+    exception_type: int

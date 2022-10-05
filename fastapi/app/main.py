@@ -15,6 +15,7 @@ from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse, HTMLResponse
+from sqlalchemy import false
 
 from sqlalchemy.orm import aliased
 
@@ -33,30 +34,24 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 
 # from app.models import *
 # from app.security import *
-# from app.update_canceled_trips import *
 
 from .utils.log_helper import *
-# from .utils.gtfs_rt_helper import *
-
 from . import crud, models, security, schemas
 from .database import Session, engine, session, get_db
 from .config import Config
-# from .gtfs_rt import *
 from pathlib import Path
 
-
 from logzio.handler import LogzioHandler
-# from fastapi_restful.tasks import repeat_every
 
 UPDATE_INTERVAL = 300
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'
-# PARENT_FOLDER = Path(__file__).parents[1]
+PARENT_FOLDER = Path(__file__).parents[1]
 TARGET_FOLDER = 'appdata'
-# TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
-TARGET_PATH_CALENDAR_JSON = os.path.join(TARGET_FOLDER,'calendar.json')
-TARGET_PATH_CANCELED_JSON = os.path.join(TARGET_FOLDER,'CancelledTripsRT.json')
+TARGET_PATH = os.path.join(PARENT_FOLDER,TARGET_FOLDER)
+TARGET_PATH_CALENDAR_JSON = os.path.join(TARGET_PATH,'calendar.json')
+TARGET_PATH_CANCELED_JSON = os.path.join(TARGET_PATH,'CancelledTripsRT.json')
 PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
 PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
@@ -160,32 +155,27 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 #     return {"token": token}
 
 @app.get("/calendar_dates")
-async def get_calendar_dates():
-    with open(PATH_TO_CALENDAR_JSON, 'r') as file:
-        calendar_dates = json.loads(file.read())
-        return {"calendar_dates":calendar_dates}
+async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
+    result = crud.get_calendar_dates(db)
+    calendar_dates = jsonable_encoder(result)
+    return JSONResponse(content={"calendar_dates":calendar_dates})
 
 def standardize_string(input_string):
     return input_string.lower().replace(" ", "")
 
 @app.get("/canceled_service_summary")
-async def get_canceled_trip_summary():
-    canceled_json_file = Path(PATH_TO_CANCELED_JSON)
-    print(canceled_json_file)
-    if not canceled_json_file.exists():
-        canceled_json_file.touch()
-
-    with open(canceled_json_file, 'r') as file:
-        canceled_trips = json.loads(file.read() or 'null')
-        
-    if canceled_trips is None:
+async def get_canceled_trip_summary(db: Session = Depends(get_db)):
+    result = crud.get_canceled_trips(db,None,True)
+    canceled_trips_summary = {}
+    total_canceled_trips = 0
+    canceled_trip_json = jsonable_encoder(result)
+    print('result' + str(canceled_trip_json))
+    if canceled_trip_json is None:
         return {"canceled_trips_summary": "",
                 "total_canceled_trips": 0,
                 "last_update": ""}
     else:
-        canceled_trips_summary = {}
-        total_canceled_trips = 0
-        for trip in canceled_trips["CanceledService"]:
+        for trip in canceled_trip_json:
             # route_number = standardize_string(trip["trp_route"])
             route_number = standardize_string(trip["trp_route"])
             if route_number:
@@ -194,39 +184,22 @@ async def get_canceled_trip_summary():
                 else:
                     canceled_trips_summary[route_number] += 1
                 total_canceled_trips += 1
-        ftp_json_file_time = os.path.getmtime(PATH_TO_CANCELED_JSON)
-        logger.info('file modified: ' + str(ftp_json_file_time))
-        modified_time = datetime.fromtimestamp((ftp_json_file_time)).astimezone(pytz.timezone("America/Los_Angeles"))
-        formatted_modified_time = modified_time.strftime('%Y-%m-%d %H:%M:%S')
+        update_time = canceled_trip_json[0]['LastUpdateDate']
         return {"canceled_trips_summary":canceled_trips_summary,
                 "total_canceled_trips":total_canceled_trips,
-                "last_updated":formatted_modified_time}
+                "last_updated":update_time}
 
 @app.get("/canceled_service/line/{line}")
-async def get_canceled_trip(line):
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
-        cancelled_service_json = json.loads(file.read())
-        canceled_service = []
-        for row in cancelled_service_json["CanceledService"]:
-            if row["trp_type"] == "REG" and standardize_string(row["trp_route"]) == line:
-                canceled_service.append(schemas.CanceledServiceData(
-                                                    gtfs_trip_id=row["m_gtfs_trip_id"],
-                                                    trip_route=standardize_string(row["trp_route"]),
-                                                    stop_description_first=row["stop_description_first"],
-                                                    stop_description_last=row["stop_description_last"],
-                                                    trip_time_start=row["trp_time_start"],
-                                                    trip_time_end=row["trp_time_end"],
-                                                    trip_direction=row["trp_direction"]                                                    
-                                                    ))
-    return {"canceled_data":canceled_service}
+async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
+    result = crud.get_canceled_trips(db,line,'REG')
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/canceled_service/all")
-async def get_canceled_trip():
-    with open(PATH_TO_CANCELED_JSON, 'r') as file:
-        cancelled_service_json = json.loads(file.read())
-        canceled_service = cancelled_service_json["CanceledService"]
-        return {"canceled_data":canceled_service}
-
+async def get_canceled_trip(db: Session = Depends(get_db)):
+    result = crud.get_canceled_trips(db,None)
+    json_compatible_item_data = jsonable_encoder(result)
+    return {"CanceledService":JSONResponse(content=json_compatible_item_data)}
 
 
 @app.get("/time")
@@ -342,38 +315,33 @@ class LogFilter(logging.Filter):
         record.env = Config.RUNNING_ENV
         return True
 
-# @app.on_event("startup")
-# @repeat_every(seconds=UPDATE_INTERVAL)
-# async def startup_event_ftp():
-#     update_canceled_trips.run_update()
-
-# @app.on_event("startup")
-# async def startup_event():
-#     print("Starting up...")
-#     uvicorn_access_logger = logging.getLogger("uvicorn.access")
-#     uvicorn_error_logger = logging.getLogger("uvicorn.error")
-#     logger = logging.getLogger("uvicorn.app")
+@app.on_event("startup")
+async def startup_event():
+    print("Starting up...")
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_error_logger = logging.getLogger("uvicorn.error")
+    logger = logging.getLogger("uvicorn.app")
     
-#     logzio_formatter = logging.Formatter("%(message)s")
-#     logzio_uvicorn_access_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.access', 5, Config.LOGZIO_URL)
-#     logzio_uvicorn_access_handler.setLevel(logging.INFO)
-#     logzio_uvicorn_access_handler.setFormatter(logzio_formatter)
+    logzio_formatter = logging.Formatter("%(message)s")
+    logzio_uvicorn_access_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.access', 5, Config.LOGZIO_URL)
+    logzio_uvicorn_access_handler.setLevel(logging.INFO)
+    logzio_uvicorn_access_handler.setFormatter(logzio_formatter)
 
-#     logzio_uvicorn_error_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.error', 5, Config.LOGZIO_URL)
-#     logzio_uvicorn_error_handler.setLevel(logging.INFO)
-#     logzio_uvicorn_error_handler.setFormatter(logzio_formatter)
+    logzio_uvicorn_error_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.error', 5, Config.LOGZIO_URL)
+    logzio_uvicorn_error_handler.setLevel(logging.INFO)
+    logzio_uvicorn_error_handler.setFormatter(logzio_formatter)
 
-#     logzio_app_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'fastapi.app', 5, Config.LOGZIO_URL)
-#     logzio_app_handler.setLevel(logging.INFO)
-#     logzio_app_handler.setFormatter(logzio_formatter)
+    logzio_app_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'fastapi.app', 5, Config.LOGZIO_URL)
+    logzio_app_handler.setLevel(logging.INFO)
+    logzio_app_handler.setFormatter(logzio_formatter)
 
-#     uvicorn_access_logger.addHandler(logzio_uvicorn_access_handler)
-#     uvicorn_error_logger.addHandler(logzio_uvicorn_error_handler)
-#     logger.addHandler(logzio_app_handler)
+    uvicorn_access_logger.addHandler(logzio_uvicorn_access_handler)
+    uvicorn_error_logger.addHandler(logzio_uvicorn_error_handler)
+    logger.addHandler(logzio_app_handler)
 
-#     uvicorn_access_logger.addFilter(LogFilter())
-#     uvicorn_error_logger.addFilter(LogFilter())
-#     logger.addFilter(LogFilter())
+    uvicorn_access_logger.addFilter(LogFilter())
+    uvicorn_error_logger.addFilter(LogFilter())
+    logger.addFilter(LogFilter())
 
 app.add_middleware(
     CORSMiddleware,
