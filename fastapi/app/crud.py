@@ -72,7 +72,7 @@ def get_calendar_dates(db):
 ## canceled trips
 
 def get_canceled_trips(db, trp_route: str):
-    if trp_route is 'all':
+    if trp_route == 'all':
         the_query = db.query(models.CanceledServices).filter(models.CanceledServices.trp_type == 'REG').all()
         return the_query
     else:

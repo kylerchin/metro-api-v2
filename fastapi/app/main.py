@@ -199,7 +199,7 @@ async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
 async def get_canceled_trip(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     json_compatible_item_data = jsonable_encoder(result)
-    return {"CanceledService":JSONResponse(content=json_compatible_item_data)}
+    return JSONResponse(content=json_compatible_item_data)
 
 
 @app.get("/time")
