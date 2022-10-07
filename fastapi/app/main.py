@@ -154,6 +154,12 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 # async def read_items(token: str = Depends(oauth2_scheme)):
 #     return {"token": token}
 
+@app.get("/get_gopass_schools")
+async def get_gopass_schools(db: Session = Depends(get_db),show_missing: bool = False):
+    result = crud.get_gopass_schools(db,show_missing)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
 @app.get("/calendar_dates")
 async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
     result = crud.get_calendar_dates(db)
