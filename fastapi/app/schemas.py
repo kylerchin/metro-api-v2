@@ -111,6 +111,39 @@ class StopTimeUpdates(BaseModel):
     # oid: int
     # trip_update_id: int
 
+class VehiclePositions(BaseModel):
+    current_stop_sequence: int
+    current_status: str
+    timestamp: int
+    stop_id = str
+    trip_id = str
+    trip_start_date = str
+    trip_route_id = str
+
+    position_latitude = float
+    position_longitude = float
+    position_bearing = float
+    position_speed = float
+
+    vehicle_id = str
+    vehicle_label = str
+    id = int
+    timestamp = int
+
+class CalendarDates(BaseModel):
+    service_id: str
+    date: str
+    exception_type: int
+
+class GoPassSchools(BaseModel):
+    phone = str
+    participating = bool
+    school = str
+    district = str
+    address = str
+    notes = str
+    resolved = bool
+
 class CanceledServices(BaseModel):
     dpce_date: str
     dpce_assign_id: str
@@ -143,26 +176,3 @@ class CanceledServices(BaseModel):
     CostCenter: str
     blk_garage: str
     LastUpdateDate: str
-class VehiclePositions(BaseModel):
-    current_stop_sequence: int
-    current_status: str
-    timestamp: int
-    stop_id = str
-    trip_id = str
-    trip_start_date = str
-    trip_route_id = str
-
-    position_latitude = float
-    position_longitude = float
-    position_bearing = float
-    position_speed = float
-
-    vehicle_id = str
-    vehicle_label = str
-    id = int
-    timestamp = int
-
-class CalenderDates(BaseModel):
-    service_id: str
-    date: str
-    exception_type: int

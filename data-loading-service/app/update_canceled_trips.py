@@ -1,17 +1,10 @@
-from config import Config
-from utils.ftp_helper import *
 import os
-from pathlib import Path
 import pandas as pd
 import json
+from config import Config
+from utils.ftp_helper import *
+from utils.database_connector import *
 from pathlib import Path
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session,sessionmaker
-# from .utils.log_helper import *
-engine = create_engine(Config.DB_URI, echo=False,executemany_mode="values")
-Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-session = Session()
 
 TARGET_FILE = "CancelledTripsRT.json"
 REMOTEPATH = '/nextbus/prod/'

@@ -2,6 +2,7 @@ from config import Config
 import update_canceled_trips as update_canceled_trips
 import utils.gtfs_rt_helper as gtfs_rt_helper
 import utils.gtfs_static_helper as gtfs_static_helper
+import utils.gopass_helper as gopass_helper
 import threading
 import time
 from schedule import every, repeat, run_pending
@@ -13,6 +14,13 @@ import pandas as pd
 def gtfs_rt_scheduler():
     try:
         gtfs_rt_helper.update_gtfs_realtime_data()
+    except Exception as e:
+        print('Error updating GTFS-RT data: ' + str(e))
+
+@repeat(every(1).day)
+def go_pass_data_scheduler():
+    try:
+        gopass_helper.update_go_pass_data()
     except Exception as e:
         print('Error updating GTFS-RT data: ' + str(e))
 
@@ -34,6 +42,7 @@ def initial_load():
     update_canceled_trips.run_update()
     gtfs_rt_helper.update_gtfs_realtime_data()
     gtfs_static_helper.update_calendar_dates()
+    gopass_helper.update_go_pass_data()
         
 if __name__ == '__main__':
     initial_load()
