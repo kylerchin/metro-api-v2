@@ -21,7 +21,7 @@ from models.gtfs_rt import *
 from config import Config
 
 from utils.gtfs_realtime_pb2 import FeedMessage
-from .database_connector import Session,get_db
+from .database_connector import *
 
 # from ..schemas import TripUpdates, StopTimeUpdates,VehiclePositions
 from datetime import datetime
@@ -38,12 +38,12 @@ SWIFTLY_API_REALTIME = 'https://api.goswift.ly/real-time/'
 SWIFTLY_GTFS_RT_TRIP_UPDATES = 'gtfs-rt-trip-updates'
 SWIFTLY_GTFS_RT_VEHICLE_POSITIONS = 'gtfs-rt-vehicle-positions'
 
-engine = create_engine(Config.DB_URI, echo=False,executemany_mode="values")
+# engine = create_engine(Config.DB_URI, echo=False,executemany_mode="values")
 
-Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-insp = inspect(engine)
-session = Session()
+# insp = inspect(engine)
+# session = Session()
 
 SERVICE_DICT = {
     'bus': 'lametro',

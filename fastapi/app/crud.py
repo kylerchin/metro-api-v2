@@ -78,7 +78,15 @@ def get_canceled_trips(db, trp_route: str):
     else:
         the_query = db.query(models.CanceledServices).filter(and_(models.CanceledServices.trp_route == trp_route),(models.CanceledServices.trp_type == 'REG')).all()
         return the_query
-    
+
+## go pass data
+def get_gopass_schools(db, show_missing: bool):
+    if show_missing == True:
+        the_query = db.query(models.GoPassSchools).query(models.GoPassSchools).all()
+        return the_query
+    else:
+        the_query = db.query(models.GoPassSchools).filter(models.GoPassSchools.school != None).all()
+        return the_query
 
 # email verification utils
 

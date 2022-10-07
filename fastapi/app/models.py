@@ -74,7 +74,21 @@ class CalendarDates(Base):
     service_id = Column(String, primary_key=True, index=True)
     date = Column(String)
     exception_type = Column(Integer)
-    
+#### end gtfs static models
+
+#### begin other models
+
+class GoPassSchools(Base):
+    __tablename__ = "go_pass_schools"
+    id = Column(Integer, primary_key=True, index=True)
+    phone = Column(String)
+    participating = Column(Boolean)
+    school = Column(String)
+    district = Column(String)
+    address = Column(String)
+    notes = Column(String)
+    resolved = Column(Boolean)
+
 class CanceledServices(Base):
     __tablename__ = "canceled_service"
     dpce_date = Column(String)
