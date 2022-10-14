@@ -100,6 +100,18 @@ class Shapes(BaseModel):
     shape_pt_sequence: int
     agency_id: str
 
+class StopTimeUpdates(BaseModel):
+    stop_sequence: int
+    trip_id: str
+    stop_id: str
+    schedule_relationship: str
+    agency_id: str
+    class Config:
+        orm_mode = True
+    # oid: int
+    # trip_update_id: int
+
+
 class TripUpdates(BaseModel):
     trip_id: str
     route_id: str
@@ -109,17 +121,9 @@ class TripUpdates(BaseModel):
     direction_id: int
     timestamp: int
     agency_id: str
-    # StopTimeUpdates = Json
-
-class StopTimeUpdates(BaseModel):
-    stop_sequence: int
-    trip_id: str
-    stop_id: str
-    schedule_relationship: str
-    agency_id: str
-    # oid: int
-    # trip_update_id: int
-
+    stop_time_updates: StopTimeUpdates
+    class Config:
+        orm_mode = True
 class VehiclePositions(BaseModel):
     current_stop_sequence: int
     current_status: str
