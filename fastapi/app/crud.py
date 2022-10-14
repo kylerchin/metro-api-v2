@@ -36,10 +36,16 @@ def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
     return the_query
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
-    if trip_id is None:
-        the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
+    if trip_id is None or trip_id == '':
+        print('trip_id is none')
+        the_query = db.query(gtfs_models.TripUpdate.trip_id).filter(gtfs_models.TripUpdate.agency_id == agency_id).distinct().all()
     else:
+        print('trip_id is' + trip_id)
         the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
+    return the_query
+
+def get_gtfs_rt_trip_updates_all(db, agency_id:str):
+    the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
     return the_query
 
 def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):

@@ -213,7 +213,17 @@ async def get_time():
     return {current_time}
 
 
-@app.get("/{agency_id}/trip_updates/{trip_id}")
+@app.get("/{agency_id}/trip_updates/")
+async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_trip_updates_all(db,agency_id)
+    return result
+
+@app.get("/{agency_id}/trip_updates/trip_id/")
+async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_trips_by_trip_id(db,'',agency_id)
+    return result
+
+@app.get("/{agency_id}/trip_updates/trip_id/{trip_id}")
 async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
     result = crud.get_gtfs_rt_trips_by_trip_id(db,trip_id,agency_id)
     return result
@@ -230,13 +240,6 @@ async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id,trip_id, db: Sessi
     # json_compatible_item_data = jsonable_encoder(result)
     # return JSONResponse(content=json_compatible_item_data)
     return result
-
-@app.get("/{agency_id}/trip_updates/{trip_id}")
-async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_trips_by_trip_id(db,trip_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
 
 ### bus static endpoints ### :)
 

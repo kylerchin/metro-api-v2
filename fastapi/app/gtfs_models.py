@@ -14,11 +14,10 @@ GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
 
 class TripUpdate(GTFSrtBase):
     __tablename__ = 'trip_updates'
-    oid = Column(Integer, primary_key=True)
 
     # This replaces the TripDescriptor message
     # TODO: figure out the relations
-    trip_id = Column(String(64))
+    trip_id = Column(String(64), primary_key=True)
     route_id = Column(String(64))
     start_time = Column(String(8))
     start_date = Column(String(10))
