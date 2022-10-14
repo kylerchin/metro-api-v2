@@ -25,7 +25,8 @@ class TripUpdate(GTFSrtBase):
     # TODO: add a domain
     schedule_relationship = Column(String(9))
     direction_id = Column(Integer)
-    
+
+    agency_id = Column(String)
     # moved from the header, and reformatted as datetime
     timestamp = Column(Integer)
     # StopTimeUpdates = relationship('StopTimeUpdate', backref='TripUpdate')
@@ -47,7 +48,8 @@ class StopTimeUpdate(GTFSrtBase):
     # TODO: Fill one from the other
     stop_sequence = Column(Integer)
     stop_id = Column(String(10),primary_key=True)
-
+    agency_id = Column(String)
+    
     # TODO: Add domain
     schedule_relationship = Column(String(9))
     # Link it to the TripUpdate
@@ -76,6 +78,7 @@ class VehiclePosition(GTFSrtBase):
     # collapsed Vehicle.Vehicle
     vehicle_id = Column(String,primary_key=True)
     vehicle_label = Column(String)
+    agency_id = Column(String)
 
     timestamp = Column(Integer)
 

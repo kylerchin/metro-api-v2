@@ -175,7 +175,6 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
     canceled_trips_summary = {}
     total_canceled_trips = 0
     canceled_trip_json = jsonable_encoder(result)
-    print('result' + str(canceled_trip_json))
     if canceled_trip_json is None:
         return {"canceled_trips_summary": "",
                 "total_canceled_trips": 0,
@@ -215,83 +214,74 @@ async def get_time():
 
 
 @app.get("/{agency_id}/trip_updates/{trip_id}")
-async def trip_updates(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
-    if agency_id == "LACMTA":
-        result = crud.get_bus_stop_times_by_trip_id(db,trip_id)
-        return result
-    elif agency_id == "LACMTA_Rail":
-        pass
-    else:
-        return {"error":"agency_id"}
+async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_trips_by_trip_id(db,trip_id,agency_id)
+    return result
+
 
 @app.get("/{agency_id}/vehicle_positions/{vehicle_id}")
 async def vehicle_position_updates(agency_id,vehicle_id=Optional[str],db: Session = Depends(get_db)):
-    if agency_id == "LACMTA":
-        result = crud.get_gtfs_rt_vehicle_positions_by_vehicle_id(db,vehicle_id)
-        return result
+    result = crud.get_gtfs_rt_vehicle_positions_by_vehicle_id(db,vehicle_id,agency_id)
+    return result
 
-    elif agency_id == "LACMTA_Rail":
-        pass
-    else:
-        return {"error":"agency_id"}
+@app.get("/{agency_id}/stop_times/{trip_id}")
+async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id)
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
+    return result
 
+@app.get("/{agency_id}/trip_updates/{trip_id}")
+async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_trips_by_trip_id(db,trip_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
+### bus static endpoints ### :)
 
+@app.get("/{agency_id}/stop_times/{trip_id}")
+async def get_stop_times_by_trip_and_agency(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/vehicle_positions/{service}")
-async def vehicle_positions(service, output_format: Optional[str] = None):
-    # format options:
-    # - json
-    result = None
-    valid_formats = ["json"]
-    if output_format:
-        if output_format in valid_formats:
-            result = get_vehicle_positions(service, output_format)
-            return result
-        else:
-            raise HTTPException(status_code=400, detail="Invalid format")
-    else:
-        result = get_vehicle_positions(service, '')
-        return Response(content=result, media_type="application/x-protobuf")
+@app.get("/{agency_id}/stop_times/route_code/{route_code}")
+async def get_stop_times_by_route_code_and_agency(agency_id,route_code, db: Session = Depends(get_db)):
+    result = crud.get_stop_times_by_route_code(db,route_code,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
-### bus endpoints ### :)
+@app.get("/{agency_id}/stops/{stop_id}")
+async def get_bus_stops(agency_id,stop_id, db: Session = Depends(get_db)):
+    result = crud.get_bus_stops(db,stop_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/bus/stop_times/{trip_id}")
-async def get_bus_stop_times_by_route_code(trip_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stop_times_by_trip_id(db,trip_id)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/bus/stop_times/route_code/{route_code}")
-async def get_bus_stop_times_by_route_code(route_code, db: Session = Depends(get_db)):
-    result = crud.get_bus_stop_times_by_route_code(db,route_code)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/bus/stops/{stop_id}")
-async def get_bus_stops(stop_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stops(db,stop_id)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/bus/trips/{trip_id}")
-async def get_bus_trips(trip_id, db: Session = Depends(get_db)):
+@app.get("/{agency_id}/trips/{trip_id}")
+async def get_bus_trips(agency_id,trip_id, db: Session = Depends(get_db)):
     # table_alias = aliased(models.Trips)
-    result = crud.get_gtfs_data(db,models.Trips,'trip_id',trip_id)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
+    result = crud.get_gtfs_data(db,models.Trips,'trip_id',trip_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/bus/shapes/{shape_id}")
-async def get_bus_shapes(shape_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_data(db,models.Shapes,'shape_id',shape_id)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
+@app.get("/{agency_id}/shapes/{shape_id}")
+async def get_bus_shapes(agency_id,shape_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_data(db,models.Shapes,'shape_id',shape_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/bus/routes/{route_id}")
-async def get_bus_routes(route_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_data(db,models.Routes,'route_id',route_id)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
+@app.get("/{agency_id}/routes/{route_id}")
+async def get_bus_routes(agency_id,route_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_data(db,models.Routes,'route_id',route_id,agency_id)
+    return result
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return JSONResponse(content=json_compatible_item_data)
     
 # @app.get("/agencies/")
 # async def root():

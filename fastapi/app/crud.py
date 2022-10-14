@@ -23,42 +23,49 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # stop_times utils
-def get_bus_stop_times_by_route_code(db, route_code: int):
-    the_query = db.query(models.StopTimes).filter(models.StopTimes.route_code == route_code).all()
+def get_stop_times_by_route_code(db, route_code: int,agency_id: str):
+    the_query = db.query(models.StopTimes).filter(models.StopTimes.route_code == route_code,models.StopTimes.agency_id == agency_id).all()
     # user_dict = models.User[username]
     # return schemas.UserInDB(**user_dict)
     return the_query
 
-def get_bus_stop_times_by_trip_id(db, trip_id: str):
-    the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id).all()
+def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
+    the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id,models.StopTimes.agency_id == agency_id).all()
     # user_dict = models.User[username]route_code
     # return schemas.UserInDB(**user_dict)
     return the_query
 
-def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str):
+def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     if trip_id is None:
-        the_query = db.query(gtfs_models.StopTimeUpdate).all()
+        the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
     else:
-        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id).all()
-    return the_query
-    
-def get_gtfs_rt_vehicle_positions_by_vehicle_id(db, vehicle_id: str):
-    if vehicle_id is None:
-        the_query = db.query(gtfs_models.VehiclePosition).all()
-    else:
-        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id).all()
+        the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
     return the_query
 
-def get_bus_stops(db, stop_code: int):
-    the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code).all()
+def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
+    if trip_id is None:
+        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
+    else:
+        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id,gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
+    return the_query
+    
+def get_gtfs_rt_vehicle_positions_by_vehicle_id(db, vehicle_id: str,agency_id: str):
+    if vehicle_id is None:
+        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    else:
+        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    return the_query
+
+def get_bus_stops(db, stop_code: int,agency_id: str):
+    the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code,models.Stops.agency_id == agency_id).all()
     # user_dict = models.User[username]
     # return schemas.UserInDB(**user_dict)
     return the_query
 
 # generic function to get the gtfs data
-def get_gtfs_data(db, tablename,column_name,query):
+def get_gtfs_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
-    the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query).all()
+    the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
     
 def get_bus_stops_by_name(db, name: str):

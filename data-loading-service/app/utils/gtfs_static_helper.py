@@ -1,3 +1,4 @@
+from calendar import calendar
 import pandas as pd
 import json
 from pathlib import Path
@@ -8,9 +9,15 @@ from .database_connector import *
 # from .utils.log_helper import *
 # engine = create_engine(Config.DB_URI, echo=False,executemany_mode="values")
 # Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-CALENDAR_DATES_URL = 'https://gitlab.com/LACMTA/gtfs_bus/-/raw/weekly-updated-service/calendar_dates.txt'
+CALENDAR_DATES_URL_BUS = 'https://gitlab.com/LACMTA/gtfs_bus/-/raw/weekly-updated-service/calendar_dates.txt'
+# CALENDAR_DATES_URL_RAIL = 'https://gitlab.com/LACMTA/gtfs_rail/-/raw/weekly-updated-service/calendar_dates.txt'
+CALENDAR_DATES_URL_RAIL = 'https://gitlab.com/LACMTA/gtfs_rail/-/raw/master/calendar_dates.txt'
 # session = Session()
 
 def update_calendar_dates():
-    calendar_dates_df = pd.read_csv(CALENDAR_DATES_URL)
+    calendar_dates_df_bus = pd.read_csv(CALENDAR_DATES_URL_BUS)
+    calendar_dates_df_bus['agency_id'] = 'LACMTA'
+    calendar_dates_df_rail = pd.read_csv(CALENDAR_DATES_URL_RAIL)
+    calendar_dates_df_rail['agency_id'] = 'LACMTA_Rail'
+    calendar_dates_df = pd.concat([calendar_dates_df_bus, calendar_dates_df_rail])
     calendar_dates_df.to_sql('calendar_dates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
