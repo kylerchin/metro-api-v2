@@ -35,19 +35,19 @@ def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
-def temp_solution():
+def temp_solution(val):
     return True
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
     for row in the_query:
-        temp_solution()
+        temp_solution(row.stop_time_updates)
     return the_query
 
 def get_gtfs_rt_trip_updates_all(db, agency_id:str):
     the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
     for row in the_query:
-        temp_solution()
+        temp_solution(row.stop_time_updates)
     return the_query
 
 def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
