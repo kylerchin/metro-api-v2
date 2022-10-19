@@ -14,11 +14,9 @@ GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
 
 class TripUpdate(GTFSrtBase):
     __tablename__ = 'trip_updates'
-    oid = Column(Integer, primary_key=True)
-
     # This replaces the TripDescriptor message
     # TODO: figure out the relations
-    trip_id = Column(String(64))
+    trip_id = Column(String(64),primary_key=True)
     route_id = Column(String(64))
     start_time = Column(String(8))
     start_date = Column(String(10))
@@ -26,10 +24,11 @@ class TripUpdate(GTFSrtBase):
     # TODO: add a domain
     schedule_relationship = Column(String(9))
     direction_id = Column(Integer)
-    
+
+    agency_id = Column(String)
     # moved from the header, and reformatted as datetime
     timestamp = Column(Integer)
-    # StopTimeUpdates = relationship('StopTimeUpdate', backref='TripUpdate')
+    stop_time_updates = relationship('StopTimeUpdate', backref=backref('trip_updates',lazy="joined"))
     class Config:
         schema_extra = {
             "definition": {
@@ -46,13 +45,14 @@ class StopTimeUpdate(GTFSrtBase):
     # oid = Column(Integer, )
 
     # TODO: Fill one from the other
-    stop_sequence = Column(Integer)
+    # stop_sequence = Column(Integer)
     stop_id = Column(String(10),primary_key=True)
-
+    trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
+    agency_id = Column(String)
     # TODO: Add domain
     schedule_relationship = Column(String(9))
     # Link it to the TripUpdate
-    # trip_update_id = Column(Integer, ForeignKey('trip_updates.oid'))
+    # trip_id = Column(Integer,)
 
 class VehiclePosition(GTFSrtBase):
     __tablename__ = "vehicle_position_updates"
@@ -78,6 +78,7 @@ class VehiclePosition(GTFSrtBase):
     vehicle_id = Column(String,primary_key=True)
     vehicle_label = Column(String)
 
+    agency_id = Column(String)
     timestamp = Column(Integer)
 
 

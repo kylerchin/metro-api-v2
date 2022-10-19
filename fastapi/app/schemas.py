@@ -42,6 +42,7 @@ class CanceledServiceData(BaseModel):
     trip_time_start: str
     trip_time_end: str
     trip_direction: str
+    agency_id: str
 
 class StopTimes(BaseModel):
     trip_id: str
@@ -58,6 +59,7 @@ class StopTimes(BaseModel):
     timepoint: int
     bay_num: int
     id: int
+    agency_id: str
 
 class Stops(BaseModel):
     stop_id: int
@@ -70,6 +72,7 @@ class Stops(BaseModel):
     location_type: str
     parent_station: str
     tpis_name: str
+    agency_id: str
 
 class Trips(BaseModel):
     route_id: int
@@ -80,6 +83,7 @@ class Trips(BaseModel):
     block_id: int
     shape_id: str
     trip_id_event: str
+    agency_id: str
 
 class Routes(BaseModel):
     route_id: int
@@ -87,12 +91,26 @@ class Routes(BaseModel):
     route_long_name: str
     route_desc: str
     route_type: int
+    agency_id: str
 
 class Shapes(BaseModel):
     shape_id: str
     shape_pt_lat: float
     shape_pt_lon: float
     shape_pt_sequence: int
+    agency_id: str
+
+class StopTimeUpdates(BaseModel):
+    stop_sequence: int
+    trip_id: str
+    stop_id: str
+    schedule_relationship: str
+    agency_id: str
+    class Config:
+        orm_mode = True
+    # oid: int
+    # trip_update_id: int
+
 
 class TripUpdates(BaseModel):
     trip_id: str
@@ -102,47 +120,43 @@ class TripUpdates(BaseModel):
     schedule_relationship: str
     direction_id: int
     timestamp: int
-    # StopTimeUpdates = Json
-
-class StopTimeUpdates(BaseModel):
-    stop_sequence: int
-    stop_id: str
-    schedule_relationship: str
-    # oid: int
-    # trip_update_id: int
-
+    agency_id: str
+    stop_time_updates: StopTimeUpdates
+    class Config:
+        orm_mode = True
 class VehiclePositions(BaseModel):
     current_stop_sequence: int
     current_status: str
     timestamp: int
-    stop_id = str
-    trip_id = str
-    trip_start_date = str
-    trip_route_id = str
+    stop_id: str
+    trip_id: str
+    trip_start_date: str
+    trip_route_id: str
 
-    position_latitude = float
-    position_longitude = float
-    position_bearing = float
-    position_speed = float
+    position_latitude: float
+    position_longitude: float
+    position_bearing: float
+    position_speed: float
 
-    vehicle_id = str
-    vehicle_label = str
-    id = int
-    timestamp = int
+    vehicle_id: str
+    vehicle_label: str
+    id: int
+    agency_id: str
+    timestamp: int
 
 class CalendarDates(BaseModel):
     service_id: str
     date: str
     exception_type: int
-
+    agency_id: str
 class GoPassSchools(BaseModel):
-    phone = str
-    participating = bool
-    school = str
-    district = str
-    address = str
-    notes = str
-    resolved = bool
+    phone: str
+    participating: bool
+    school: str
+    district: str
+    address: str
+    notes: str
+    resolved: bool
 
 class CanceledServices(BaseModel):
     dpce_date: str
