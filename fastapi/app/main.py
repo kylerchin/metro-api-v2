@@ -41,7 +41,7 @@ from .database import Session, engine, session, get_db
 from .config import Config
 from pathlib import Path
 
-from logzio.handler import LogzioHandler
+# from logzio.handler import LogzioHandler
 
 UPDATE_INTERVAL = 300
 
@@ -56,10 +56,16 @@ PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
 PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
 
+tags_metadata = [
+    {"name": "Real-Time data", "description": "Includes GTFS-RT data for Metro Rail and Metro Bus."},
+    {"name": "Static data", "description": "GTFS Static data, including routes, stops, and schedules."},
+    {"name": "Other data", "description": "Other data on an as-needed basis."},
+    {"name": "User Methods", "description": "Methods for user authentication and authorization."},
+]
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(docs_url="/")
+app = FastAPI(openapi_tags=tags_metadata,docs_url="/")
 # db = connect(host='', port=0, timeout=None, source_address=None)
 
 templates = Jinja2Templates(directory="app/frontend")
@@ -101,75 +107,65 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+#### Helper functions ####
+
+def get_columns_from_schema(schema):
+    if schema == 'trip_updates':
+        return schemas.TripUpdates.__fields__.keys()
+    if schema == 'vehicle_position_updates':
+        return schemas.VehiclePositions.__fields__.keys()
+
+def standardize_string(input_string):
+    return input_string.lower().replace(" ", "")
 ####################
 #  Begin Routes
 ####################
 
-# tokens
+@app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"])
+async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
+# async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
+    if field_name == 'all':
+        result = crud.get_all_gtfs_rt_trips(db,'',agency_id)
+        return result
+    if field_name in get_columns_from_schema('trip_updates'):
+        if field_value == 'list':
+            result = crud.list_gtfs_rt_trips_by_field_name(db,field_name,agency_id)
+            return result
+        multiple_values = field_value.split(',')
+        if len(multiple_values) > 1:
+            result_array = []
+            for value in multiple_values:
+                result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,value,agency_id)
+                result_array.append(result)
+            return result_array
+        result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,field_value,agency_id)
+        return result
 
-@app.get("/verify_email/{email_verification_token}")
-async def verify_email_route(email_verification_token: str,db: Session = Depends(get_db)):
-    
-    if not crud.verify_email(email_verification_token,db):
-        return False
+@app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
+async def vehicle_position_updates(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
+    # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
+    if field_name == 'all':
+        result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id)
+        return result
+    if field_name in get_columns_from_schema('vehicle_position_updates'):
+        if field_value == 'list':
+            result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name,agency_id)
+            return result
+        multiple_values = field_value.split(',')
+        if len(multiple_values) > 1:
+            result_array = []
+            for value in multiple_values:
+                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,value,agency_id)
+                if len(result) == 0:
+                    result = '{message:' + value + ' not found in ' + field_name + ' }'
+                result_array.append(result)
+            return result_array
+        result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
+        if len(result) == 0:
+            return '{message:' + field_value + ' not found in ' + field_name + ' }'
+        return result
 
-    return "email verified"
-
-@app.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
-    user = crud.authenticate_user(form_data.username, form_data.password,db)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = crud.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-
-
-# end tokens
-
-
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
-
-@app.get("/users/{username}", response_model=schemas.User)
-def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(oauth2_scheme)):
-    db_user = crud.get_user(db, username=username)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-# @app.get("/items/")
-# async def read_items(token: str = Depends(oauth2_scheme)):
-#     return {"token": token}
-
-@app.get("/get_gopass_schools")
-async def get_gopass_schools(db: Session = Depends(get_db),show_missing: bool = False):
-    result = crud.get_gopass_schools(db,show_missing)
-    json_compatible_item_data = jsonable_encoder(result)
-    return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/calendar_dates")
-async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
-    result = crud.get_calendar_dates(db)
-    calendar_dates = jsonable_encoder(result)
-    return JSONResponse(content={"calendar_dates":calendar_dates})
-
-def standardize_string(input_string):
-    return input_string.lower().replace(" ", "")
-
-@app.get("/canceled_service_summary")
+@app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     canceled_trips_summary = {}
@@ -194,108 +190,88 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
                 "total_canceled_trips":total_canceled_trips,
                 "last_updated":update_time}
 
-@app.get("/canceled_service/line/{line}")
+@app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
+async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id)
+    return result
+
+@app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
+async def get_stop_times_by_trip_and_agency(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id)
+    return result
+
+#### END GTFS-RT Routes ####
+
+
+@app.get("/canceled_service/line/{line}",tags=["Real-Time data"])
 async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
     result = crud.get_canceled_trips(db,line)
     json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/canceled_service/all")
+@app.get("/canceled_service/all",tags=["Real-Time data"])
 async def get_canceled_trip(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
 
+
+### Begin Static data endpoints ### :)
+### GTFS Static data ###
+@app.get("/calendar_dates",tags=["Static data"])
+async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
+    result = crud.get_calendar_dates(db)
+    calendar_dates = jsonable_encoder(result)
+    return JSONResponse(content={"calendar_dates":calendar_dates})
+
+@app.get("/{agency_id}/stop_times/route_code/{route_code}",tags=["Static data"])
+async def get_stop_times_by_route_code_and_agency(agency_id,route_code, db: Session = Depends(get_db)):
+    result = crud.get_stop_times_by_route_code(db,route_code,agency_id)
+    return result
+
+@app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
+async def get_bus_stops(agency_id,stop_id, db: Session = Depends(get_db)):
+    result = crud.get_bus_stops(db,stop_id,agency_id)
+    return result
+
+@app.get("/{agency_id}/trips/{trip_id}",tags=["Static data"])
+async def get_bus_trips(agency_id,trip_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Trips,'trip_id',trip_id,agency_id)
+    return result
+
+@app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
+async def get_bus_shapes(agency_id,shape_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id)
+    return result
+
+@app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
+async def get_bus_routes(agency_id,route_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id)
+    return result
+
+#### END GTFS Static data endpoints ####
+#### END Static data endpoints ####
+
+
+#### Begin Other data endpoints ####
+
+@app.get("/get_gopass_schools",tags=["Other data"])
+async def get_gopass_schools(db: Session = Depends(get_db),show_missing: bool = False):
+    result = crud.get_gopass_schools(db,show_missing)
+    json_compatible_item_data = jsonable_encoder(result)
+    return JSONResponse(content=json_compatible_item_data)
+
 @app.get("/time")
 async def get_time():
     current_time = datetime.now()
     return {current_time}
 
-
-@app.get("/{agency_id}/trip_updates/")
-async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_trip_updates_all(db,agency_id)
-    return result
-
-@app.get("/{agency_id}/trip_updates/trip_id/")
-async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_trips_by_trip_id(db,'',agency_id)
-    return result
-
-@app.get("/{agency_id}/trip_updates/trip_id/{trip_id}")
-async def get_gtfs_rt_trip_updates_by_trip_id(agency_id,trip_id=Optional[str],db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_trips_by_trip_id(db,trip_id,agency_id)
-    return result
-
-
-@app.get("/{agency_id}/vehicle_positions/{vehicle_id}")
-async def vehicle_position_updates(agency_id,vehicle_id=Optional[str],db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_vehicle_positions_by_vehicle_id(db,vehicle_id,agency_id)
-    return result
-
-@app.get("/{agency_id}/stop_times/{trip_id}")
-async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id)
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-    return result
-
-### bus static endpoints ### :)
-
-@app.get("/{agency_id}/stop_times/{trip_id}")
-async def get_stop_times_by_trip_and_agency(agency_id,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/{agency_id}/stop_times/route_code/{route_code}")
-async def get_stop_times_by_route_code_and_agency(agency_id,route_code, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_route_code(db,route_code,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/{agency_id}/stops/{stop_id}")
-async def get_bus_stops(agency_id,stop_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stops(db,stop_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/{agency_id}/trips/{trip_id}")
-async def get_bus_trips(agency_id,trip_id, db: Session = Depends(get_db)):
-    # table_alias = aliased(models.Trips)
-    result = crud.get_gtfs_data(db,models.Trips,'trip_id',trip_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/{agency_id}/shapes/{shape_id}")
-async def get_bus_shapes(agency_id,shape_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_data(db,models.Shapes,'shape_id',shape_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-
-@app.get("/{agency_id}/routes/{route_id}")
-async def get_bus_routes(agency_id,route_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_data(db,models.Routes,'route_id',route_id,agency_id)
-    return result
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return JSONResponse(content=json_compatible_item_data)
-    
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.0.3"}
+#     return {"Metro API Version": "2.1.5"}
 
 # Frontend Routing
-
-@app.get("/login",response_class=HTMLResponse)
-def login(request:Request):
-    return templates.TemplateResponse("login.html", context= {"request": request})
-
 
 @app.get("/",response_class=HTMLResponse)
 def index(request:Request):
@@ -314,33 +290,86 @@ class LogFilter(logging.Filter):
         record.env = Config.RUNNING_ENV
         return True
 
-@app.on_event("startup")
-async def startup_event():
-    print("Starting up...")
-    uvicorn_access_logger = logging.getLogger("uvicorn.access")
-    uvicorn_error_logger = logging.getLogger("uvicorn.error")
-    logger = logging.getLogger("uvicorn.app")
+
+# tokens
+
+@app.get("/login",response_class=HTMLResponse,tags=["User Methods"])
+def login(request:Request):
+    return templates.TemplateResponse("login.html", context= {"request": request})
+
+
+@app.get("/verify_email/{email_verification_token}", tags=["User Methods"])
+async def verify_email_route(email_verification_token: str,db: Session = Depends(get_db)):
     
-    logzio_formatter = logging.Formatter("%(message)s")
-    logzio_uvicorn_access_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.access', 5, Config.LOGZIO_URL)
-    logzio_uvicorn_access_handler.setLevel(logging.INFO)
-    logzio_uvicorn_access_handler.setFormatter(logzio_formatter)
+    if not crud.verify_email(email_verification_token,db):
+        return False
 
-    logzio_uvicorn_error_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.error', 5, Config.LOGZIO_URL)
-    logzio_uvicorn_error_handler.setLevel(logging.INFO)
-    logzio_uvicorn_error_handler.setFormatter(logzio_formatter)
+    return "email verified"
 
-    logzio_app_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'fastapi.app', 5, Config.LOGZIO_URL)
-    logzio_app_handler.setLevel(logging.INFO)
-    logzio_app_handler.setFormatter(logzio_formatter)
+@app.post("/token", response_model=schemas.Token,tags=["User Methods"])
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),db: Session = Depends(get_db)):
+    user = crud.authenticate_user(form_data.username, form_data.password,db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = crud.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
-    uvicorn_access_logger.addHandler(logzio_uvicorn_access_handler)
-    uvicorn_error_logger.addHandler(logzio_uvicorn_error_handler)
-    logger.addHandler(logzio_app_handler)
 
-    uvicorn_access_logger.addFilter(LogFilter())
-    uvicorn_error_logger.addFilter(LogFilter())
-    logger.addFilter(LogFilter())
+
+
+# end tokens
+
+
+@app.post("/users/", response_model=schemas.User,tags=["User Methods"])
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+@app.get("/users/{username}", response_model=schemas.User,tags=["User Methods"])
+def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(oauth2_scheme)):
+    db_user = crud.get_user(db, username=username)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+
+# @app.on_event("startup")
+# async def startup_event():
+#     print("Starting up...")
+#     uvicorn_access_logger = logging.getLogger("uvicorn.access")
+#     uvicorn_error_logger = logging.getLogger("uvicorn.error")
+#     logger = logging.getLogger("uvicorn.app")
+    
+#     logzio_formatter = logging.Formatter("%(message)s")
+#     logzio_uvicorn_access_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.access', 5, Config.LOGZIO_URL)
+#     logzio_uvicorn_access_handler.setLevel(logging.INFO)
+#     logzio_uvicorn_access_handler.setFormatter(logzio_formatter)
+
+#     logzio_uvicorn_error_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'uvicorn.error', 5, Config.LOGZIO_URL)
+#     logzio_uvicorn_error_handler.setLevel(logging.INFO)
+#     logzio_uvicorn_error_handler.setFormatter(logzio_formatter)
+
+#     logzio_app_handler = LogzioHandler(Config.LOGZIO_TOKEN, 'fastapi.app', 5, Config.LOGZIO_URL)
+#     logzio_app_handler.setLevel(logging.INFO)
+#     logzio_app_handler.setFormatter(logzio_formatter)
+
+#     uvicorn_access_logger.addHandler(logzio_uvicorn_access_handler)
+#     uvicorn_error_logger.addHandler(logzio_uvicorn_error_handler)
+#     logger.addHandler(logzio_app_handler)
+
+#     uvicorn_access_logger.addFilter(LogFilter())
+#     uvicorn_error_logger.addFilter(LogFilter())
+#     logger.addFilter(LogFilter())
 
 app.add_middleware(
     CORSMiddleware,

@@ -38,14 +38,50 @@ def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
 def temp_solution(val):
     return True
 
-def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
-    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
+def list_gtfs_rt_trips_by_field_name(db, field_name: str,agency_id: str):
+    the_query = db.query(getattr(gtfs_models.TripUpdate,field_name),gtfs_models.TripUpdate.agency_id).with_entities(getattr(gtfs_models.TripUpdate,field_name)).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        result.append(row[0])
+    return result
+
+def list_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,agency_id: str):
+    the_query = db.query(getattr(gtfs_models.VehiclePosition,field_name),gtfs_models.VehiclePosition.agency_id).with_entities(getattr(gtfs_models.VehiclePosition,field_name)).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        result.append(row[0])
+    return result
+
+def get_gtfs_rt_trips_by_field_name(db, field_name: str,field_value: str,agency_id: str):
+    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(getattr(gtfs_models.TripUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
+    if len(the_query) == 0:
+        the_query = '{message:' + field_value + ' not found in ' + field_name + ' }'
+        return the_query
+    for row in the_query:
+        temp_solution(row.stop_time_updates)
+    return the_query
+    
+def get_all_gtfs_rt_trips(db, agency_id:str):
+    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
     for row in the_query:
         temp_solution(row.stop_time_updates)
     return the_query
 
-def get_gtfs_rt_trip_updates_all(db, agency_id:str):
-    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
+def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
+    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    return the_query
+
+def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
+    if field_value is None:
+        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    if len(the_query) == 0:
+        the_query = '{message:' + field_value + ' not found in ' + field_name + ' }'
+        return the_query
+    return the_query
+
+def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
+    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
     for row in the_query:
         temp_solution(row.stop_time_updates)
     return the_query
@@ -57,12 +93,6 @@ def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
         the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id,gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
     return the_query
     
-def get_gtfs_rt_vehicle_positions_by_vehicle_id(db, vehicle_id: str,agency_id: str):
-    if vehicle_id is None:
-        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
-    else:
-        the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()
-    return the_query
 
 def get_bus_stops(db, stop_code: int,agency_id: str):
     the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code,models.Stops.agency_id == agency_id).all()
@@ -70,8 +100,8 @@ def get_bus_stops(db, stop_code: int,agency_id: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
-# generic function to get the gtfs data
-def get_gtfs_data(db, tablename,column_name,query,agency_id):
+# generic function to get the gtfs static data
+def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
     the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
