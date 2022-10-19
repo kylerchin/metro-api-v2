@@ -14,20 +14,19 @@ from typing import Dict, List, Optional
 from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse, HTMLResponse
-from sqlalchemy import false
-
-from sqlalchemy.orm import aliased
-
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
+from sqlalchemy import false
+from sqlalchemy.orm import aliased
 
 from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
 
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from enum import Enum
 
 # for OAuth2
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
@@ -55,6 +54,16 @@ TARGET_PATH_CANCELED_JSON = os.path.join(TARGET_PATH,'CancelledTripsRT.json')
 PATH_TO_CALENDAR_JSON = os.path.realpath(TARGET_PATH_CALENDAR_JSON)
 PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 
+class AgencyIdEnum(str, Enum):
+    LACMTA = "LACMTA"
+    LACMTA_Rail = "LACMTA_Rail"
+
+class TripUpdatesFieldsEnum(str, Enum):
+    trip_id = "trip_id"
+    vehicle_id = "vehicle_id"
+
+class VehiclePositionsFieldsEnum(str, Enum):
+    vehicle_id = "vehicle_id"
 
 tags_metadata = [
     {"name": "Real-Time data", "description": "Includes GTFS-RT data for Metro Rail and Metro Bus."},
@@ -96,8 +105,8 @@ csvFilePath = r'data.csv'
 jsonFilePath = r'appdata/calendar_dates.json'
 
 
-lactmta_gtfs_rt_url = "https://lacmta.github.io/lacmta-gtfs/data/calendar_dates.txt"
-response = requests.get(lactmta_gtfs_rt_url)
+lacmta_gtfs_rt_url = "https://lacmta.github.io/lacmta-gtfs/data/calendar_dates.txt"
+response = requests.get(lacmta_gtfs_rt_url)
 
 cr = csv.reader(response.text.splitlines())
 # csv_to_json(cr,jsonFilePath)
@@ -117,16 +126,19 @@ def get_columns_from_schema(schema):
 
 def standardize_string(input_string):
     return input_string.lower().replace(" ", "")
+
 ####################
 #  Begin Routes
 ####################
 
+@app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"])
+async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
+    result = crud.get_all_gtfs_rt_trips(db,agency_id)
+    return result
+
 @app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"])
-async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
+async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_name: TripUpdatesFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
 # async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
-    if field_name == 'all':
-        result = crud.get_all_gtfs_rt_trips(db,'',agency_id)
-        return result
     if field_name in get_columns_from_schema('trip_updates'):
         if field_value == 'list':
             result = crud.list_gtfs_rt_trips_by_field_name(db,field_name,agency_id)
@@ -141,12 +153,14 @@ async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_valu
         result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,field_value,agency_id)
         return result
 
+@app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
+async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
+    result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id)
+    return result
+
 @app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
-async def vehicle_position_updates(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
+async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
     # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
-    if field_name == 'all':
-        result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id)
-        return result
     if field_name in get_columns_from_schema('vehicle_position_updates'):
         if field_value == 'list':
             result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name,agency_id)
@@ -191,12 +205,12 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
                 "last_updated":update_time}
 
 @app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
-async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id,trip_id, db: Session = Depends(get_db)):
+async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id)
     return result
 
 @app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
-async def get_stop_times_by_trip_and_agency(agency_id,trip_id, db: Session = Depends(get_db)):
+async def get_stop_times_by_trip_and_agency(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
     result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id)
     return result
 
@@ -226,27 +240,27 @@ async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
     return JSONResponse(content={"calendar_dates":calendar_dates})
 
 @app.get("/{agency_id}/stop_times/route_code/{route_code}",tags=["Static data"])
-async def get_stop_times_by_route_code_and_agency(agency_id,route_code, db: Session = Depends(get_db)):
+async def get_stop_times_by_route_code_and_agency(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
     result = crud.get_stop_times_by_route_code(db,route_code,agency_id)
     return result
 
 @app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
-async def get_bus_stops(agency_id,stop_id, db: Session = Depends(get_db)):
+async def get_bus_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
     result = crud.get_bus_stops(db,stop_id,agency_id)
     return result
 
 @app.get("/{agency_id}/trips/{trip_id}",tags=["Static data"])
-async def get_bus_trips(agency_id,trip_id, db: Session = Depends(get_db)):
+async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Trips,'trip_id',trip_id,agency_id)
     return result
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
-async def get_bus_shapes(agency_id,shape_id, db: Session = Depends(get_db)):
+async def get_bus_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id)
     return result
 
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
-async def get_bus_routes(agency_id,route_id, db: Session = Depends(get_db)):
+async def get_bus_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id)
     return result
 
