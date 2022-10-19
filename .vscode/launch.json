@@ -10,6 +10,7 @@
       "request": "launch",
       "module": "uvicorn",
       "args": ["app.main:app", "--reload"],
+      "cwd": "${workspaceFolder}\\fastapi",
       "justMyCode": true
     },
     {
