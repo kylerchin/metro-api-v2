@@ -27,6 +27,7 @@ class StopTimes(Base):
     destination_code = Column(String)
     timepoint = Column(Integer)
     bay_num = Column(Integer)
+    agency_id = Column(String)
     id = Column(Integer, primary_key=True, index=True)
 
 class Stops(Base):
@@ -41,6 +42,7 @@ class Stops(Base):
     location_type = Column(String)
     parent_station = Column(String)
     tpis_name = Column(String)
+    agency_id = Column(String)
 
 class Trips(Base):
     __tablename__ = "trips"
@@ -52,6 +54,7 @@ class Trips(Base):
     block_id = Column(Integer)
     shape_id = Column(String)
     trip_id_event = Column(String)
+    agency_id = Column(String)
 class Routes(Base):
     __tablename__ = "routes"
     route_id = Column(Integer, primary_key=True, index=True)
@@ -62,18 +65,22 @@ class Routes(Base):
     route_color = Column(String)
     route_text_color = Column(String)
     route_url = Column(String)
+    agency_id = Column(String)
 class Shapes(Base):
     __tablename__ = "shapes"
     shape_id = Column(String, primary_key=True, index=True)
     shape_pt_lat = Column(Float)
     shape_pt_lon = Column(Float)
     shape_pt_sequence = Column(Integer)
+    agency_id = Column(String)
 
 class CalendarDates(Base):
     __tablename__ = "calendar_dates"
     service_id = Column(String, primary_key=True, index=True)
+    agency_id = Column(String)
     date = Column(String)
     exception_type = Column(Integer)
+    agency_id = Column(String)
 #### end gtfs static models
 
 #### begin other models
