@@ -15,9 +15,11 @@ from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
+from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
+
 
 from sqlalchemy import false
 from sqlalchemy.orm import aliased
@@ -25,6 +27,7 @@ from sqlalchemy.orm import aliased
 from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from enum import Enum
 
@@ -171,12 +174,12 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
             for value in multiple_values:
                 result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,value,agency_id)
                 if len(result) == 0:
-                    result = '{message:' + value + ' not found in ' + field_name + ' }'
+                    result = {"message": + value + "not found in " + field_name }
                 result_array.append(result)
             return result_array
         result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
         if len(result) == 0:
-            return '{message:' + field_value + ' not found in ' + field_name + ' }'
+            return {"message": + value + "not found in " + field_name }
         return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
@@ -355,7 +358,15 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    client_host = request.client.host
+    try:
+        origin_url = dict(request.scope["headers"]).get(b"referer", b"").decode()
+        user_agent = dict(request.scope["headers"]).get(b"user-agent", b"").decode()
+    except Exception as e:
+        origin_url = "unknown"
+    logger.exception({"client_host": client_host, "origin_url": origin_url, "exception": str('404 error'),"user_agent":user_agent})
 
 @app.on_event("startup")
 async def startup_event():
