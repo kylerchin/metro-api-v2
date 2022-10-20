@@ -10,6 +10,7 @@ def set_db_schema():
             return 'metro_api_dev'
     except Exception as e:
         print('Error setting db schema: ' + str(e))
+        
 class Config:
     BASE_URL = "https://api.metro.net"
     TARGET_DB_SCHEMA = set_db_schema()

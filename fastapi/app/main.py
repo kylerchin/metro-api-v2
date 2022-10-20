@@ -40,7 +40,7 @@ from .database import Session, engine, session, get_db
 from .config import Config
 from pathlib import Path
 
-# from logzio.handler import LogzioHandler
+from logzio.handler import LogzioHandler
 
 UPDATE_INTERVAL = 300
 
