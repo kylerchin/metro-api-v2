@@ -17,7 +17,7 @@ from .config import Config
 from .database import Session,get_db
 from .utils.log_helper import *
 from .utils.email_helper import *
-from datetime import datetime
+from .utils.enum_values import *
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -71,15 +71,6 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     return the_query
 
-def get_readable_status(status):
-    if status == 0:
-        return 'INCOMING_AT'
-    if status == 1:
-        return 'STOPPED_AT'
-    if status == 2:
-        return 'IN_TRANSIT_TO'
-
-
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
     if field_value is None:
         the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
@@ -88,10 +79,6 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     for row in the_query:
         row.current_status = get_readable_status(row.current_status)
         result.append(row)
-
-    if len(result) == 0:
-        result = '{message:' + field_value + ' not found in ' + field_name + ' }'
-        return result
     return result
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):

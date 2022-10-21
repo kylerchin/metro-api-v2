@@ -171,13 +171,14 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
             for value in multiple_values:
                 result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,value,agency_id)
                 if len(result) == 0:
-                    result = {"message": + value + "not found in " + field_name }
-                result_array.append(result)
+                    temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name + "'" }
+                result_array.append(temp_result)
             return result_array
-        result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
-        if len(result) == 0:
-            return {"message": + value + "not found in " + field_name }
-        return result
+        else:
+            result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
+            if len(result) == 0:
+                result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name + "'" }
+                return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
