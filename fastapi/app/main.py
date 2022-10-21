@@ -60,7 +60,7 @@ class AgencyIdEnum(str, Enum):
 
 class TripUpdatesFieldsEnum(str, Enum):
     trip_id = "trip_id"
-    vehicle_id = "vehicle_id"
+    route_id = "route_id"
 
 class VehiclePositionsFieldsEnum(str, Enum):
     vehicle_id = "vehicle_id"
@@ -148,10 +148,16 @@ async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_
             result_array = []
             for value in multiple_values:
                 result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,value,agency_id)
-                result_array.append(result)
+                if len(result) == 0:
+                    temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name + "'" }
+                result_array.append(temp_result)
             return result_array
-        result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,field_value,agency_id)
-        return result
+        else:
+            result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,field_value,agency_id)
+            if len(result) == 0:
+                result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name + "'" }
+                return result
+
 
 @app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
 async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
