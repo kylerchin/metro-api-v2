@@ -9,19 +9,9 @@ try:
 except Exception as e:
     logger.exception('Environment variables not loaded from .env file: ' + str(e))
 
-
-def set_db_schema():
-    try:
-        current_environment = os.environ.get('RUNNING_ENV')
-        if current_environment != 'prod':
-            return 'metro_api'
-        else:
-            return 'metro_api_dev'
-    except Exception as e:
-        print('Error setting db schema: ' + str(e))
 class Config:
     BASE_URL = "https://api.metro.net"
-    TARGET_DB_SCHEMA = set_db_schema()
+    TARGET_DB_SCHEMA = "metro_api"
     DB_URI = os.environ.get('URI')
     SECRET_KEY = os.environ.get('HASH_KEY')
     ALGORITHM = os.environ.get('HASHING_ALGORITHM')
