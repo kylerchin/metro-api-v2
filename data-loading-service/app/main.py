@@ -35,7 +35,7 @@ def canceled_trips_update_scheduler():
 def calendar_dates_update_scheduler():
     try:
         gtfs_static_helper.update_calendar_dates()
-        gtfs_static_helper.update_gtfs_static_files()
+        # gtfs_static_helper.update_gtfs_static_files()
     except Exception as e:
         print('Error updating canceled trips: ' + str(e))
         
@@ -43,7 +43,7 @@ def initial_load():
     update_canceled_trips.run_update()
     gtfs_rt_helper.update_gtfs_realtime_data()
     gtfs_static_helper.update_calendar_dates()
-    gtfs_static_helper.update_gtfs_static_files()
+    # gtfs_static_helper.update_gtfs_static_files()
     gopass_helper.update_go_pass_data()
         
 if __name__ == '__main__':
