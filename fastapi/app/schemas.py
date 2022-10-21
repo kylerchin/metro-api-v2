@@ -104,6 +104,8 @@ class StopTimeUpdates(BaseModel):
     stop_sequence: int
     trip_id: str
     stop_id: str
+    arrival_time: str
+    departure_time: str
     schedule_relationship: str
     agency_id: str
     class Config:

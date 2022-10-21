@@ -61,9 +61,12 @@ class AgencyIdEnum(str, Enum):
 class TripUpdatesFieldsEnum(str, Enum):
     trip_id = "trip_id"
     route_id = "route_id"
+    stop_id = "stop_id"
 
 class VehiclePositionsFieldsEnum(str, Enum):
     vehicle_id = "vehicle_id"
+    trip_route_id = "trip_route_id"
+    stop_id = "stop_id"
 
 tags_metadata = [
     {"name": "Real-Time data", "description": "Includes GTFS-RT data for Metro Rail and Metro Bus."},
@@ -139,7 +142,7 @@ async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depend
 @app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"])
 async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_name: TripUpdatesFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
 # async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
-    if field_name in get_columns_from_schema('trip_updates'):
+    if field_name in get_columns_from_schema('trip_updates') or field_name == 'stop_id':
         if field_value == 'list':
             result = crud.list_gtfs_rt_trips_by_field_name(db,field_name,agency_id)
             return result
@@ -157,7 +160,7 @@ async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_
             if len(result) == 0:
                 result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name + "'" }
                 return result
-
+            return result
 
 @app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
 async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
@@ -185,6 +188,7 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
             if len(result) == 0:
                 result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name + "'" }
                 return result
+            return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
