@@ -19,15 +19,12 @@ from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,Plain
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-
-
 from sqlalchemy import false
 from sqlalchemy.orm import aliased
 
 from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from enum import Enum
 
@@ -357,16 +354,6 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
-@app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request, exc):
-    client_host = request.client.host
-    try:
-        origin_url = dict(request.scope["headers"]).get(b"referer", b"").decode()
-        user_agent = dict(request.scope["headers"]).get(b"user-agent", b"").decode()
-    except Exception as e:
-        origin_url = "unknown"
-    logger.exception({"client_host": client_host, "origin_url": origin_url, "exception": str('404 error'),"user_agent":user_agent})
 
 @app.on_event("startup")
 async def startup_event():
