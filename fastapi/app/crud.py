@@ -71,14 +71,28 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     return the_query
 
+def get_readable_status(status):
+    if status == 0:
+        return 'INCOMING_AT'
+    if status == 1:
+        return 'STOPPED_AT'
+    if status == 2:
+        return 'IN_TRANSIT_TO'
+
+
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
     if field_value is None:
         the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
-    if len(the_query) == 0:
-        the_query = '{message:' + field_value + ' not found in ' + field_name + ' }'
-        return the_query
-    return the_query
+    result = []
+    for row in the_query:
+        row.current_status = get_readable_status(row.current_status)
+        result.append(row)
+
+    if len(result) == 0:
+        result = '{message:' + field_value + ' not found in ' + field_name + ' }'
+        return result
+    return result
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()

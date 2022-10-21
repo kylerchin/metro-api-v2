@@ -144,6 +144,7 @@ class VehiclePositions(BaseModel):
     agency_id: str
     timestamp: int
 
+
 class CalendarDates(BaseModel):
     service_id: str
     date: str

@@ -1,14 +1,9 @@
 # gtfsrdb.py: load gtfs-realtime data to a database
-import enum
+
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData,Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData
 from sqlalchemy.orm import relationship, backref
 from .config import Config
-
-class VehicleStopStatus(enum.Enum):
-    INCOMING_AT = 0
-    STOPPED_AT = 1
-    IN_TRANSIT_TO = 2
 
 GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
 
@@ -64,7 +59,7 @@ class VehiclePosition(GTFSrtBase):
 
     # Vehicle information
     current_stop_sequence = Column(Integer)
-    current_status = Column(Enum(VehicleStopStatus))
+    current_status = Column(String)
     timestamp = Column(Integer)
     stop_id = Column(String)
 
