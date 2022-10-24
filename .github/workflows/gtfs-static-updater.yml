@@ -3,7 +3,7 @@ name: 📅Update GTFS Static in database 🚈🚌
 on:
   push:
       paths:
-      - '/appdata/gtfs-static/**.zip'
+      - './appdata/gtfs-static/**.zip'
 
 jobs:
   deploy:
