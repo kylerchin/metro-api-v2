@@ -27,9 +27,8 @@ def update_calendar_dates():
 
 def update_gtfs_static_files():
     for file in list_of_gtfs_static_files:
-        bus_file_path = "https://gitlab.com/LACMTA/gtfs_bus/-/raw/master/" + file + '.txt'
-        rail_file_path = "https://gitlab.com/LACMTA/gtfs_rail/-/raw/master/" + file + '.txt'
-        print(file)
+        bus_file_path = "../../appdata/gtfs-static/gtfs_bus/" + file + '.txt'
+        rail_file_path = "../../gtfs-static/gtfs_rail/" + file + '.txt'
         temp_df_bus = pd.read_csv(bus_file_path)
         temp_df_bus['agency_id'] = 'LACMTA'
         temp_df_rail = pd.read_csv(rail_file_path)
