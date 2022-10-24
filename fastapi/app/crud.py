@@ -1,3 +1,4 @@
+from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
 
@@ -17,7 +18,7 @@ from .config import Config
 from .database import Session,get_db
 from .utils.log_helper import *
 from .utils.email_helper import *
-from .utils.enum_values import *
+from .utils.db_helper import *
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -75,6 +76,10 @@ def get_all_gtfs_rt_trips(db, agency_id:str):
 
 def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        row = vehicle_position_reformat(row)
+        result.append(row)
     return the_query
 
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
@@ -83,7 +88,7 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
     result = []
     for row in the_query:
-        row.current_status = get_readable_status(row.current_status)
+        row = vehicle_position_reformat(row)
         result.append(row)
     return result
 
