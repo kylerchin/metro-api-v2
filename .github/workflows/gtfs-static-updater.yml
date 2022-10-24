@@ -15,7 +15,8 @@ jobs:
         run: |
           unzip extract-gtfs-static-zips.sh
       - uses: actions/setup-python@v2
-        name: 🐍Setup Python environment and requirments🐍
+        name: 🐍Setup Python environment🐍 
+      - name: 🚩Install requirements🚩
         run : pip install -r ./data-loading-service/requirements.txt
       - name: Update Database with latest data🛢
         run: python ./data-loading-service/app/gtfs_static_updater
