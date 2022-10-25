@@ -48,9 +48,12 @@ class StopTimeUpdate(GTFSrtBase):
     # stop_sequence = Column(Integer)
     stop_id = Column(String(10),primary_key=True)
     trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
+    arrival = Column(Integer)
+    departure = Column(Integer)
     agency_id = Column(String)
     # TODO: Add domain
     schedule_relationship = Column(String(9))
+    
     # Link it to the TripUpdate
     # trip_id = Column(Integer,)
 

@@ -15,7 +15,7 @@ from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
+from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -60,10 +60,13 @@ class AgencyIdEnum(str, Enum):
 
 class TripUpdatesFieldsEnum(str, Enum):
     trip_id = "trip_id"
-    vehicle_id = "vehicle_id"
+    route_id = "route_id"
+    stop_id = "stop_id"
 
 class VehiclePositionsFieldsEnum(str, Enum):
     vehicle_id = "vehicle_id"
+    trip_route_id = "trip_route_id"
+    stop_id = "stop_id"
 
 tags_metadata = [
     {"name": "Real-Time data", "description": "Includes GTFS-RT data for Metro Rail and Metro Bus."},
@@ -133,29 +136,35 @@ def standardize_string(input_string):
 
 @app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"])
 async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
-    result = crud.get_all_gtfs_rt_trips(db,agency_id)
+    result = crud.get_all_gtfs_rt_trips(db,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"])
 async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_name: TripUpdatesFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
 # async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
-    if field_name in get_columns_from_schema('trip_updates'):
+    if field_name in get_columns_from_schema('trip_updates') or field_name == 'stop_id':
         if field_value == 'list':
-            result = crud.list_gtfs_rt_trips_by_field_name(db,field_name,agency_id)
+            result = crud.list_gtfs_rt_trips_by_field_name(db,field_name.value,agency_id.value)
             return result
         multiple_values = field_value.split(',')
         if len(multiple_values) > 1:
             result_array = []
             for value in multiple_values:
-                result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,value,agency_id)
-                result_array.append(result)
+                result = crud.get_gtfs_rt_trips_by_field_name(db,field_name.value,value,agency_id.value)
+                if len(result) == 0:
+                    temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
+                result_array.append(temp_result)
             return result_array
-        result = crud.get_gtfs_rt_trips_by_field_name(db,field_name,field_value,agency_id)
-        return result
+        else:
+            result = crud.get_gtfs_rt_trips_by_field_name(db,field_name.value,field_value,agency_id.value)
+            if len(result) == 0:
+                result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
+                return result
+            return result
 
 @app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
 async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
-    result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id)
+    result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value)
     return result
 
 @app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
@@ -163,21 +172,23 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
     # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
     if field_name in get_columns_from_schema('vehicle_position_updates'):
         if field_value == 'list':
-            result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name,agency_id)
+            result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,agency_id.value)
             return result
         multiple_values = field_value.split(',')
         if len(multiple_values) > 1:
             result_array = []
             for value in multiple_values:
-                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,value,agency_id)
+                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,value,agency_id.value)
                 if len(result) == 0:
-                    result = '{message:' + value + ' not found in ' + field_name + ' }'
-                result_array.append(result)
+                    temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
+                result_array.append(temp_result)
             return result_array
-        result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
-        if len(result) == 0:
-            return '{message:' + field_value + ' not found in ' + field_name + ' }'
-        return result
+        else:
+            result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,field_value,agency_id.value)
+            if len(result) == 0:
+                result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
+                return result
+            return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
@@ -206,12 +217,12 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
 
 @app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
 async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id)
+    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
 async def get_stop_times_by_trip_and_agency(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id)
+    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id.value)
     return result
 
 #### END GTFS-RT Routes ####
@@ -241,27 +252,27 @@ async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
 
 @app.get("/{agency_id}/stop_times/route_code/{route_code}",tags=["Static data"])
 async def get_stop_times_by_route_code_and_agency(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_route_code(db,route_code,agency_id)
+    result = crud.get_stop_times_by_route_code(db,route_code,agency_id.value)
     return result
 
 @app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
 async def get_bus_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stops(db,stop_id,agency_id)
+    result = crud.get_bus_stops(db,stop_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trips/{trip_id}",tags=["Static data"])
 async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Trips,'trip_id',trip_id,agency_id)
+    result = crud.get_gtfs_static_data(db,models.Trips,'trip_id',trip_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
 async def get_bus_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id)
+    result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
 async def get_bus_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id)
+    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
     return result
 
 #### END GTFS Static data endpoints ####
@@ -354,8 +365,6 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
-
 
 @app.on_event("startup")
 async def startup_event():
