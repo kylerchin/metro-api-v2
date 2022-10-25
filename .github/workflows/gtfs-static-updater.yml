@@ -2,8 +2,8 @@ name: 📅Update GTFS Static in database 🚈🚌
 
 on:
   push:
-      # paths:
-      # - './appdata/gtfs-static/**.zip'
+      paths:
+      - './appdata/gtfs-static/**.zip'
       # branches:
       #   - main
 
