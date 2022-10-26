@@ -6,3 +6,4 @@ sandbox/
 app/secrets.py
 **/secrets.py
 fastapi/app/secrets.py
+appdata/gtfs-static/**/
