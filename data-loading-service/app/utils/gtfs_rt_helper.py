@@ -18,6 +18,7 @@ from datetime import datetime
 from soupsieve import match
 from sqlalchemy.orm import Session,sessionmaker
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.dialects.postgresql import JSON
 from models.gtfs_rt import *
 from config import Config
 
@@ -107,26 +108,30 @@ def update_gtfs_realtime_data():
         stop_time_array = []
         vehicle_position_update_array = []
         for entity in feed.entity:
-            trip_update_array.append({
-                'trip_id': entity.trip_update.trip.trip_id,
-                'route_id': entity.trip_update.trip.route_id,
-                'start_time': entity.trip_update.trip.start_time,
-                'start_date': entity.trip_update.trip.start_date,
-                'direction_id': entity.trip_update.trip.direction_id,
-                'schedule_relationship': entity.trip_update.trip.schedule_relationship,
-                'agency_id': agency,
-                'timestamp': entity.trip_update.timestamp
-            })
+            this_stop_time_json = {}
+
             for stop_time_update in entity.trip_update.stop_time_update:
-                stop_time_array.append({
+                this_stop_time_json={
                     'trip_id': entity.trip_update.trip.trip_id,
                     'stop_id': stop_time_update.stop_id,
                     'arrival': stop_time_update.arrival.time,
                     'departure': stop_time_update.departure.time,
                     'agency_id': agency,
                     'schedule_relationship': stop_time_update.schedule_relationship
-                })
-
+                }
+                stop_time_array.append(this_stop_time_json)
+            
+            trip_update_array.append({
+                'trip_id': entity.trip_update.trip.trip_id,
+                'route_id': entity.trip_update.trip.route_id,
+                'start_time': entity.trip_update.trip.start_time,
+                'start_date': entity.trip_update.trip.start_date,
+                'direction_id': entity.trip_update.trip.direction_id,
+                'stop_time_json': this_stop_time_json,
+                'schedule_relationship': entity.trip_update.trip.schedule_relationship,
+                'agency_id': agency,
+                'timestamp': entity.trip_update.timestamp
+            })
         trip_update_df = pd.DataFrame(trip_update_array)
         combined_trip_update_dataframes.append(trip_update_df)
         stop_time_df = pd.DataFrame(stop_time_array)
@@ -163,7 +168,7 @@ def update_gtfs_realtime_data():
     combined_vehicle_position_df = pd.concat(combined_vehicle_position_dataframes)
     combined_vehicle_position_df.to_sql('vehicle_position_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     combined_stop_time_df.to_sql('stop_time_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
-    combined_trip_update_df.to_sql('trip_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    combined_trip_update_df.to_sql('trip_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA,dtype={'stop_time_json': JSON})
     process_end = timeit.default_timer()
     # print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
     print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
