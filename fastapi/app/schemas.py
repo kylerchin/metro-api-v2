@@ -123,6 +123,7 @@ class TripUpdates(BaseModel):
     direction_id: int
     timestamp: int
     agency_id: str
+    stop_time_json: Json
     stop_time_updates: StopTimeUpdates
     class Config:
         orm_mode = True
