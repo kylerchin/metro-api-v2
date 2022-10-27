@@ -120,7 +120,6 @@ def update_gtfs_realtime_data():
                     'schedule_relationship': stop_time_update.schedule_relationship
                 }
                 stop_time_array.append(this_stop_time_json)
-            
             trip_update_array.append({
                 'trip_id': entity.trip_update.trip.trip_id,
                 'route_id': entity.trip_update.trip.route_id,
@@ -132,12 +131,11 @@ def update_gtfs_realtime_data():
                 'agency_id': agency,
                 'timestamp': entity.trip_update.timestamp
             })
-        trip_update_df = pd.DataFrame(trip_update_array)
-        combined_trip_update_dataframes.append(trip_update_df)
         stop_time_df = pd.DataFrame(stop_time_array)
         combined_stop_time_dataframes.append(stop_time_df)
-        # print(trip_update_df)
-        # print(stop_time_df)
+        trip_update_df = pd.DataFrame(trip_update_array)
+        combined_trip_update_dataframes.append(trip_update_df)
+
         vehicle_positions_feed = FeedMessage()
         response_data = connect_to_swiftly(SERVICE_DICT[agency], SWIFTLY_GTFS_RT_VEHICLE_POSITIONS)
         vehicle_positions_feed.ParseFromString(response_data)
@@ -172,7 +170,10 @@ def update_gtfs_realtime_data():
     process_end = timeit.default_timer()
     # print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
     print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
-    
+    del combined_trip_update_dataframes
+    del combined_stop_time_dataframes
+    del combined_vehicle_position_dataframes
+
 if __name__ == "__main__":
     process_start = timeit.default_timer()
     # update_gtfs_realtime_data()
