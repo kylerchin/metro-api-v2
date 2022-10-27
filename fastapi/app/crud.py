@@ -62,20 +62,25 @@ def get_gtfs_rt_trips_by_field_name(db, field_name: str,field_value: str,agency_
     if field_name == 'stop_id':
         the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(getattr(gtfs_models.StopTimeUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
     else:
-        the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(getattr(gtfs_models.TripUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
+        the_query = db.query(gtfs_models.TripUpdate).filter(getattr(gtfs_models.TripUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
         if len(the_query) == 0:
             the_query = db.query(gtfs_models.TripUpdate).filter(getattr(gtfs_models.TripUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
             return the_query
     if the_query:
         for row in the_query:
-            temp_solution(row.stop_time_updates)
+            row = vehicle_position_reformat(row)
+            result.append(row)
     return the_query
-    
+
+        
+        
 def get_all_gtfs_rt_trips(db, agency_id:str):
-    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
+    the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
+    result = []
     for row in the_query:
-        temp_solution(row.stop_time_updates)
-    return the_query
+        row = trip_update_reformat(row)
+        result.append(row)
+    return result
 
 def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
@@ -83,7 +88,7 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     for row in the_query:
         row = vehicle_position_reformat(row)
         result.append(row)
-    return the_query
+    return result
 
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
     if field_value is None:
@@ -96,10 +101,13 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     return result
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
-    the_query = db.query(gtfs_models.TripUpdate).join(gtfs_models.StopTimeUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
+    the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
+    result = []
     for row in the_query:
-        temp_solution(row.stop_time_updates)
-    return the_query
+        row = trip_update_reformat(row)
+        result.append(row)
+    return result
+
 
 def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
     if trip_id is None:

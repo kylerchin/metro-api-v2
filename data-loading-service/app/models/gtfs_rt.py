@@ -23,7 +23,7 @@ class StopTimeUpdate(GTFSrtBase):
     # oid = Column(Integer, )
 
     # TODO: Fill one from the other
-    # stop_sequence = Column(Integer)
+    stop_sequence = Column(Integer)
     stop_id = Column(String(10),primary_key=True)
     agency_id = Column(String)
     
