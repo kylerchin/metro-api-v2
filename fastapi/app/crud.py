@@ -67,10 +67,11 @@ def get_gtfs_rt_trips_by_field_name(db, field_name: str,field_value: str,agency_
             the_query = db.query(gtfs_models.TripUpdate).filter(getattr(gtfs_models.TripUpdate,field_name) == field_value,gtfs_models.TripUpdate.agency_id == agency_id).all()
             return the_query
     if the_query:
+        result = []
         for row in the_query:
-            row = vehicle_position_reformat(row)
-            result.append(row)
-    return the_query
+            new_row = trip_update_reformat(row)
+            result.append(new_row)
+    return result
 
         
         
@@ -78,16 +79,16 @@ def get_all_gtfs_rt_trips(db, agency_id:str):
     the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()
     result = []
     for row in the_query:
-        row = trip_update_reformat(row)
-        result.append(row)
+        new_row = trip_update_reformat(row)
+        result.append(new_row)
     return result
 
 def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     result = []
     for row in the_query:
-        row = vehicle_position_reformat(row)
-        result.append(row)
+        new_row = vehicle_position_reformat(row)
+        result.append(new_row)
     return result
 
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
@@ -96,16 +97,16 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
     result = []
     for row in the_query:
-        row = vehicle_position_reformat(row)
-        result.append(row)
+        new_row = vehicle_position_reformat(row)
+        result.append(new_row)
     return result
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
     result = []
     for row in the_query:
-        row = trip_update_reformat(row)
-        result.append(row)
+        new_row = trip_update_reformat(row)
+        result.append(new_row)
     return result
 
 

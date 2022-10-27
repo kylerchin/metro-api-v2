@@ -1,36 +1,33 @@
+import json
 def trip_update_reformat(row):
-    
-    row['id'] = row.trip_id
+    result_row = {}
+    result_row['id'] = row.trip_id
     trip_update = {}    
     trip_update['timestamp'] = row.timestamp
-    del row.timestamp
 
     trip = {}
     if row.trip_id:
         trip['tripid'] = row.trip_id
-        del row.trip_id
     if row.start_time:
         trip['startTime'] = row.start_time
-        del row.start_time
     if row.start_date:
         trip['startDate'] = row.start_date
-        del row.start_date
     if row.schedule_relationship:
         trip['scheduleRelationship'] = get_readable_schedule_relationship(row.schedule_relationship)
-        del row.schedule_relationship
     if row.route_id:
         trip['routeId'] = row.route_id
-        del row.route_id
     if row.direction_id:
         trip['directionId'] = row.direction_id
-        del row.direction_id
     trip_update['trip'] = trip
 
     stop_time_updates = []
+    
     if row.stop_time_json:
-        for stop_time in row.stop_time_json:
+        clean_stop_time_json = row.stop_time_json.replace("'", '"')
+        for stop_time in json.loads(clean_stop_time_json):
+            print(stop_time)
             this_stop_time = {}
-            if stop_time['stop_squence']:
+            if stop_time['stop_sequence']:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
             if stop_time['arrival']:
                 this_stop_time['arrival']['time'] = stop_time['arrival']
@@ -41,10 +38,9 @@ def trip_update_reformat(row):
             if stop_time['stop_id']:
                 this_stop_time['stopId'] = stop_time['stop_id']
             stop_time_updates.append(this_stop_time)
-    del row.stop_time_json
-    row["tripUpdate"] = trip_update
-    row["tripUpdate"]["stopTimeUpdate"] = stop_time_updates
-    return row
+    trip_update['stopTimeUpdates'] = stop_time_updates
+    result_row['tripUpdate'] = trip_update
+    return result_row
 
 
 def vehicle_position_reformat(row):
