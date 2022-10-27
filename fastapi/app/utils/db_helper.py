@@ -6,17 +6,17 @@ def trip_update_reformat(row):
     trip_update['timestamp'] = row.timestamp
 
     trip = {}
-    if row.trip_id:
+    if 'trip_id' in row:
         trip['tripid'] = row.trip_id
-    if row.start_time:
+    if 'start_time' in row:
         trip['startTime'] = row.start_time
-    if row.start_date:
+    if 'start_date' in row:
         trip['startDate'] = row.start_date
-    if row.schedule_relationship:
+    if 'schedule_relationship' in row:
         trip['scheduleRelationship'] = get_readable_schedule_relationship(row.schedule_relationship)
-    if row.route_id:
+    if 'route_id' in row:
         trip['routeId'] = row.route_id
-    if row.direction_id:
+    if 'direction_id' in row:
         trip['directionId'] = row.direction_id
     trip_update['trip'] = trip
 
@@ -27,15 +27,15 @@ def trip_update_reformat(row):
         for stop_time in json.loads(clean_stop_time_json):
             print(stop_time)
             this_stop_time = {}
-            if stop_time['stop_sequence']:
+            if 'stop_squence' in stop_time:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
-            if stop_time['arrival']:
+            if 'arrival' in stop_time:
                 this_stop_time['arrival']['time'] = stop_time['arrival']
-            if stop_time['departure']:
+            if 'departure' in stop_time:
                 this_stop_time['departure']['time'] = stop_time['departure']
-            if stop_time['schedule_relationship']:
+            if 'schedule_relationship' in stop_time:
                 this_stop_time['scheduleRelationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
-            if stop_time['stop_id']:
+            if 'stop_id' in stop_time:
                 this_stop_time['stopId'] = stop_time['stop_id']
             stop_time_updates.append(this_stop_time)
     trip_update['stopTimeUpdates'] = stop_time_updates
@@ -48,31 +48,31 @@ def vehicle_position_reformat(row):
         vehicle_info = {}
         position_info = {}
 
-        if row.trip_id:
+        if 'trip_id' in row:
             trip_info['trip_id'] = row.trip_id
             del row.trip_id
-        if row.trip_route_id:
+        if 'trip_route_id' in row:
             trip_info['route_id'] = row.trip_route_id
             del row.trip_route_id
-        if row.trip_start_date:
+        if 'trip_start_date' in row:
             trip_info['trip_start_date'] = row.trip_start_date
             del row.trip_start_date      
-        if row.vehicle_id:
+        if 'vehicle_id' in row:
             vehicle_info['vehicle_id'] = row.vehicle_id
             del row.vehicle_id
-        if row.vehicle_label:
+        if 'vehicle_label' in row:
             vehicle_info['vehicle_label'] = row.vehicle_label
             del row.vehicle_label
-        if row.position_latitude:
+        if 'position_latitude' in row:
             position_info['latitude'] = row.position_latitude
             del row.position_latitude
-        if row.position_longitude:
+        if 'position_longitude' in row:
             position_info['longitude'] = row.position_longitude
             del row.position_longitude
-        if row.position_bearing:
+        if 'position_bearing' in row:
             position_info['bearing'] = row.position_bearing
             del row.position_bearing
-        if row.position_speed:
+        if 'position_speed' in row:
             position_info['speed'] = row.position_speed
             del row.position_speed
 
