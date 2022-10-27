@@ -22,10 +22,9 @@ def trip_update_reformat(row):
 
     stop_time_updates = []
     
-    if row.stop_time_json:
+    if 'stop_time_json' in row:
         clean_stop_time_json = row.stop_time_json.replace("'", '"')
         for stop_time in json.loads(clean_stop_time_json):
-            print(stop_time)
             this_stop_time = {}
             if 'stop_squence' in stop_time:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
