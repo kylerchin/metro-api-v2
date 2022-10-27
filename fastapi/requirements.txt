@@ -19,3 +19,4 @@ fastapi-restful[tasks]
 pandas
 protobuf==3.19.6
 google
+GeoAlchemy2

@@ -10,6 +10,8 @@ python-dotenv
 SQLAlchemy
 psycopg2
 schedule
+geopandas
+GeoAlchemy2
 # python-jose[cryptography]
 # passlib[bcrypt]
 # # GeoAlchemy2
