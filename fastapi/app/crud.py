@@ -42,7 +42,6 @@ def temp_solution(val):
 def list_gtfs_rt_trips_by_field_name(db, field_name: str,agency_id: str):
     result = []
     if field_name == 'stop_id':
-        print('in stop id field name')
         the_query = db.query(getattr(gtfs_models.StopTimeUpdate,field_name),gtfs_models.StopTimeUpdate.agency_id).with_entities(getattr(gtfs_models.StopTimeUpdate,field_name)).filter(gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
     else:
         the_query = db.query(getattr(gtfs_models.TripUpdate,field_name),gtfs_models.TripUpdate.agency_id).with_entities(getattr(gtfs_models.TripUpdate,field_name)).filter(gtfs_models.TripUpdate.agency_id == agency_id).all()

@@ -6,39 +6,40 @@ def trip_update_reformat(row):
     trip_update['timestamp'] = row.timestamp
 
     trip = {}
-    if 'trip_id' in row:
+    if row.trip_id:
         trip['tripid'] = row.trip_id
-    if 'start_time' in row:
+    if row.start_time:
         trip['startTime'] = row.start_time
-    if 'start_date' in row:
+    if row.start_date:
         trip['startDate'] = row.start_date
-    if 'schedule_relationship' in row:
+    if row.schedule_relationship:
         trip['scheduleRelationship'] = get_readable_schedule_relationship(row.schedule_relationship)
-    if 'route_id' in row:
+    if row.route_id:
         trip['routeId'] = row.route_id
-    if 'direction_id' in row:
+    if row.direction_id:
         trip['directionId'] = row.direction_id
     trip_update['trip'] = trip
 
     stop_time_updates = []
     
-    if 'stop_time_json' in row:
+    if row.stop_time_json:
         clean_stop_time_json = row.stop_time_json.replace("'", '"')
         for stop_time in json.loads(clean_stop_time_json):
             this_stop_time = {}
-            if 'stop_squence' in stop_time:
+            if stop_time['stop_sequence']:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
-            if 'arrival' in stop_time:
+            if stop_time['arrival']:
                 arrival = {}
                 arrival['time'] = stop_time['arrival']
                 this_stop_time['arrival'] = arrival
-            if 'departure' in stop_time:
+            if stop_time['departure']:
                 departure = {}
                 departure['time'] = stop_time['departure']
                 this_stop_time['departure'] = departure
-            if 'schedule_relationship' in stop_time:
+                this_stop_time['departure']['time'] = stop_time['departure']
+            if stop_time['schedule_relationship']:
                 this_stop_time['scheduleRelationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
-            if 'stop_id' in stop_time:
+            if stop_time['stop_id']:
                 this_stop_time['stopId'] = stop_time['stop_id']
             stop_time_updates.append(this_stop_time)
     trip_update['stopTimeUpdates'] = stop_time_updates
@@ -51,31 +52,31 @@ def vehicle_position_reformat(row):
         vehicle_info = {}
         position_info = {}
 
-        if 'trip_id' in row:
+        if row.trip_id:
             trip_info['trip_id'] = row.trip_id
             del row.trip_id
-        if 'trip_route_id' in row:
+        if row.trip_route_id:
             trip_info['route_id'] = row.trip_route_id
             del row.trip_route_id
-        if 'trip_start_date' in row:
+        if row.trip_start_date:
             trip_info['trip_start_date'] = row.trip_start_date
             del row.trip_start_date      
-        if 'vehicle_id' in row:
+        if row.vehicle_id:
             vehicle_info['vehicle_id'] = row.vehicle_id
             del row.vehicle_id
-        if 'vehicle_label' in row:
+        if row.vehicle_label:
             vehicle_info['vehicle_label'] = row.vehicle_label
             del row.vehicle_label
-        if 'position_latitude' in row:
+        if row.position_latitude:
             position_info['latitude'] = row.position_latitude
             del row.position_latitude
-        if 'position_longitude' in row:
+        if row.position_longitude:
             position_info['longitude'] = row.position_longitude
             del row.position_longitude
-        if 'position_bearing' in row:
+        if row.position_bearing:
             position_info['bearing'] = row.position_bearing
             del row.position_bearing
-        if 'position_speed' in row:
+        if row.position_speed:
             position_info['speed'] = row.position_speed
             del row.position_speed
 
