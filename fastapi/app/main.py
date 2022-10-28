@@ -270,6 +270,11 @@ async def get_bus_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends
     result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
     return result
 
+@app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])
+async def get_bus_shapes(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Calendar,'calendar',service_id,agency_id.value)
+    return result
+
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
 async def get_bus_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
