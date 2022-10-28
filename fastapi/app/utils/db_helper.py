@@ -29,9 +29,13 @@ def trip_update_reformat(row):
             if 'stop_squence' in stop_time:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
             if 'arrival' in stop_time:
-                this_stop_time['arrival']['time'] = stop_time['arrival']
+                arrival = {}
+                arrival['time'] = stop_time['arrival']
+                this_stop_time['arrival'] = arrival
             if 'departure' in stop_time:
-                this_stop_time['departure']['time'] = stop_time['departure']
+                departure = {}
+                departure['time'] = stop_time['departure']
+                this_stop_time['departure'] = departure
             if 'schedule_relationship' in stop_time:
                 this_stop_time['scheduleRelationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
             if 'stop_id' in stop_time:
