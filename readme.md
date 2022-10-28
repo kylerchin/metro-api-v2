@@ -71,6 +71,29 @@ python -m uvicorn app.main:app --reload
 python3 -m uvicorn app.main:app --reload
 ```
 
+### Run Data Service
+
+``` shell
+# change to the API application directory
+cd data-loading-service
+```
+
+
+``` shell
+# install the required libraries
+pip3 install -r requirements.txt
+```
+
+Run the application
+
+``` shell
+# install the required libraries
+python app
+
+```
+python main.py
+```
+
 ### Misc Commands
 
 ``` shell

@@ -104,6 +104,8 @@ class StopTimeUpdates(BaseModel):
     stop_sequence: int
     trip_id: str
     stop_id: str
+    arrival_time: str
+    departure_time: str
     schedule_relationship: str
     agency_id: str
     class Config:
@@ -121,6 +123,7 @@ class TripUpdates(BaseModel):
     direction_id: int
     timestamp: int
     agency_id: str
+    stop_time_json: Json
     stop_time_updates: StopTimeUpdates
     class Config:
         orm_mode = True
@@ -143,6 +146,7 @@ class VehiclePositions(BaseModel):
     id: int
     agency_id: str
     timestamp: int
+
 
 class CalendarDates(BaseModel):
     service_id: str

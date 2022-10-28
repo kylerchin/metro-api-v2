@@ -1,15 +1,36 @@
 # gtfs_rt.py: the database model for loading gtfs-realtime data to a database
 
+import enum
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData,Enum
+# from sqlalchemy.dialects.postgresql import ARRAY,JSON
 from sqlalchemy.orm import relationship, backref
 from config import Config
 GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
+
+class VehicleStopStatus(enum.Enum):
+    INCOMING_AT = 0
+    STOPPED_AT = 1
+    IN_TRANSIT_TO = 2
 
 # classes for the GTFS-realtime data
 # TripUpdate
 # StopTimeUpdate
 # VehiclePosition
+
+class StopTimeUpdate(GTFSrtBase):
+    __tablename__ = 'stop_time_updates'
+    # oid = Column(Integer, )
+
+    # TODO: Fill one from the other
+    stop_sequence = Column(Integer,default='')
+    stop_id = Column(String(10),primary_key=True)
+    agency_id = Column(String)
+    
+    # TODO: Add domain
+    schedule_relationship = Column(String(9))
+    # Link it to the TripUpdate
+    trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
 
 class TripUpdate(GTFSrtBase):
     __tablename__ = 'trip_updates'
@@ -29,6 +50,7 @@ class TripUpdate(GTFSrtBase):
     agency_id = Column(String)
     # moved from the header, and reformatted as datetime
     timestamp = Column(Integer)
+    stop_time_json = Column(String)
     stop_time_updates = relationship('StopTimeUpdate', backref=backref('trip_updates',lazy="joined"))
     class Config:
         schema_extra = {
@@ -41,19 +63,6 @@ class TripUpdate(GTFSrtBase):
             }
         }
 
-class StopTimeUpdate(GTFSrtBase):
-    __tablename__ = 'stop_time_updates'
-    # oid = Column(Integer, )
-
-    # TODO: Fill one from the other
-    # stop_sequence = Column(Integer)
-    stop_id = Column(String(10),primary_key=True)
-    agency_id = Column(String)
-    
-    # TODO: Add domain
-    schedule_relationship = Column(String(9))
-    # Link it to the TripUpdate
-    trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
 
 class VehiclePosition(GTFSrtBase):
     __tablename__ = "vehicle_position_updates"

@@ -6,3 +6,8 @@ sandbox/
 app/secrets.py
 **/secrets.py
 fastapi/app/secrets.py
+**/gtfs_bus.zip
+**/gtfs_rail.zip
+appdata/gtfs-static/gtfs_rail.zip
+appdata/gtfs-static/gtfs_bus.zip
+test.py
