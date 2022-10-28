@@ -3,6 +3,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData
 from sqlalchemy.orm import relationship, backref
+# from sqlalchemy.dialects.postgresql import JSON
 from .config import Config
 
 GTFSrtBase = declarative_base(metadata=MetaData(schema=Config.TARGET_DB_SCHEMA))
@@ -28,6 +29,7 @@ class TripUpdate(GTFSrtBase):
     agency_id = Column(String)
     # moved from the header, and reformatted as datetime
     timestamp = Column(Integer)
+    stop_time_json = Column(String)
     stop_time_updates = relationship('StopTimeUpdate', backref=backref('trip_updates',lazy="joined"))
     class Config:
         schema_extra = {
@@ -45,7 +47,7 @@ class StopTimeUpdate(GTFSrtBase):
     # oid = Column(Integer, )
 
     # TODO: Fill one from the other
-    # stop_sequence = Column(Integer)
+    stop_sequence = Column(Integer)
     stop_id = Column(String(10),primary_key=True)
     trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
     arrival = Column(Integer)
