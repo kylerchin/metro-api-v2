@@ -11,7 +11,7 @@ SQLAlchemy
 psycopg2
 schedule
 geopandas
-GeoAlchemy2
+GeoAlchemy2==0.10.2
 # python-jose[cryptography]
 # passlib[bcrypt]
 # # GeoAlchemy2

@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float,PrimaryKeyConstraint
+from geoalchemy2 import *
 
 from .database import Base
 class User(Base):
@@ -38,6 +39,7 @@ class Stops(Base):
     stop_desc = Column(String)
     stop_lat = Column(Float)
     stop_lon = Column(Float)
+    geom = Column(Geometry('POINT', srid=4326))
     stop_url = Column(String)
     location_type = Column(String)
     parent_station = Column(String)
@@ -71,6 +73,7 @@ class Shapes(Base):
     shape_id = Column(String, primary_key=True, index=True)
     shape_pt_lat = Column(Float)
     shape_pt_lon = Column(Float)
+    geom = Column(Geometry('POINT', srid=4326))
     shape_pt_sequence = Column(Integer)
     agency_id = Column(String)
 

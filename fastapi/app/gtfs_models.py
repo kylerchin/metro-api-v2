@@ -3,6 +3,8 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, MetaData
 from sqlalchemy.orm import relationship, backref
+
+from geoalchemy2 import *
 # from sqlalchemy.dialects.postgresql import JSON
 from .config import Config
 
@@ -78,6 +80,7 @@ class VehiclePosition(GTFSrtBase):
     position_longitude = Column(Float)
     position_bearing = Column(Float)
     position_speed = Column(Float)
+    geom = Column(Geometry('POINT', srid=4326))
 
     # collapsed Vehicle.Vehicle
     vehicle_id = Column(String,primary_key=True)

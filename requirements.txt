@@ -20,4 +20,4 @@ numpy
 pandas
 google
 protobuf==3.19.*
-GeoAlchemy2
+GeoAlchemy2==0.10.2
