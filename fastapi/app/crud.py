@@ -10,6 +10,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_
+from geoalchemy2 import functions
 
 from app import gtfs_models
 
@@ -127,7 +128,10 @@ def get_bus_stops(db, stop_code: int,agency_id: str):
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
-    the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
+    if "geometry" in aliased_table.__table__.columns:
+        the_query = db.query(aliased_table,functions.ST_AsGeoJSON(aliased_table.geometry)).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
+    else:
+        the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
     
 def get_bus_stops_by_name(db, name: str):

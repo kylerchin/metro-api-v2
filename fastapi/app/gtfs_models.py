@@ -80,7 +80,7 @@ class VehiclePosition(GTFSrtBase):
     position_longitude = Column(Float)
     position_bearing = Column(Float)
     position_speed = Column(Float)
-    geom = Column(Geometry('POINT', srid=4326))
+    geometry = Column(Geometry('POINT', srid=4326))
 
     # collapsed Vehicle.Vehicle
     vehicle_id = Column(String,primary_key=True)
