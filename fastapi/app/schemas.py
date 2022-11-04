@@ -73,6 +73,7 @@ class Stops(BaseModel):
     parent_station: str
     tpis_name: str
     agency_id: str
+    geometry: str
 
 class Trips(BaseModel):
     route_id: int
@@ -99,6 +100,7 @@ class Shapes(BaseModel):
     shape_pt_lon: float
     shape_pt_sequence: int
     agency_id: str
+    geometry: str
 
 class StopTimeUpdates(BaseModel):
     stop_sequence: int
@@ -146,7 +148,7 @@ class VehiclePositions(BaseModel):
     id: int
     agency_id: str
     timestamp: int
-
+    geometry: str
 
 class CalendarDates(BaseModel):
     service_id: str

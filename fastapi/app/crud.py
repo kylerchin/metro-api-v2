@@ -10,7 +10,10 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_
-
+from geoalchemy2 import functions,shape
+from shapely.geometry import Point
+from shapely import geometry as geo
+# from shapely import to_geojson
 from app import gtfs_models
 
 from . import models, schemas,gtfs_models
@@ -94,6 +97,9 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     if field_value is None:
         the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    for row in the_query:
+        if row.geometry:
+            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
     result = []
     for row in the_query:
         new_row = vehicle_position_reformat(row)
@@ -126,9 +132,14 @@ def get_bus_stops(db, stop_code: int,agency_id: str):
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
-    the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
+    if "geometry" in aliased_table.__table__.columns:
+        the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
+        for row in the_query:
+            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+    else:
+        the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
-    
+
 def get_bus_stops_by_name(db, name: str):
     the_query = db.query(models.Stops).filter(models.Stops.stop_name.contains(name)).all()
     return the_query

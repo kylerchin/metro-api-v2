@@ -1,4 +1,10 @@
 import json
+
+class JsonReturn(dict):
+    def __str__(self):
+        return json.dumps(self)
+
+
 def trip_update_reformat(row):
     result_row = {}
     result_row['id'] = row.trip_id
