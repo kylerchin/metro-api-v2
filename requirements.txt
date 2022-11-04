@@ -21,3 +21,4 @@ pandas
 google
 protobuf==3.19.*
 GeoAlchemy2==0.10.2
+shapely
