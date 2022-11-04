@@ -31,13 +31,17 @@ def trip_update_reformat(row):
     if row.stop_time_json:
         clean_stop_time_json = row.stop_time_json.replace("'", '"')
         for stop_time in json.loads(clean_stop_time_json):
-            print(stop_time)
             this_stop_time = {}
             if stop_time['stop_sequence']:
                 this_stop_time['stopSequence'] = stop_time['stop_sequence']
             if stop_time['arrival']:
-                this_stop_time['arrival']['time'] = stop_time['arrival']
+                arrival = {}
+                arrival['time'] = stop_time['arrival']
+                this_stop_time['arrival'] = arrival
             if stop_time['departure']:
+                departure = {}
+                departure['time'] = stop_time['departure']
+                this_stop_time['departure'] = departure
                 this_stop_time['departure']['time'] = stop_time['departure']
             if stop_time['schedule_relationship']:
                 this_stop_time['scheduleRelationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
