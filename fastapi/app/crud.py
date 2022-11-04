@@ -129,9 +129,30 @@ def get_bus_stops(db, stop_code: int,agency_id: str):
     # return schemas.UserInDB(**user_dict)
     return the_query
 
+def get_agency_data(db, tablename,agency_id):
+    aliased_table = aliased(tablename)
+    the_query = db.query(aliased_table).filter(getattr(aliased_table,'agency_id') == agency_id).all()
+    return the_query
+
+def get_bus_shape_list(db,agency_id):
+    the_query = db.query(models.Shapes).filter(models.Shapes.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        result.append(row.shape_id)
+    return result
+    
+def get_calendar_list(db,agency_id):
+    the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        result.append(row.service_id)
+    return result
+
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
+    if query == 'list':
+        the_query = db.query(aliased_table).filter(getattr(aliased_table,'agency_id') == agency_id).all()
     if "geometry" in aliased_table.__table__.columns:
         the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
         for row in the_query:

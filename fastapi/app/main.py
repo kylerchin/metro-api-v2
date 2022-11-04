@@ -267,17 +267,33 @@ async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(g
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
 async def get_bus_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
+    if shape_id == "list":
+        result = crud.get_bus_shape_list(db,agency_id.value)
+    else: 
+        result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])
 async def get_bus_shapes(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Calendar,'calendar',service_id,agency_id.value)
+    if service_id == "list":
+        result = crud.get_calendar_list(db,agency_id.value)
+    else:
+        result = crud.get_gtfs_static_data(db,models.Calendar,'calendar',service_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
 async def get_bus_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
+    return result
+
+@app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])
+async def get_bus_calendar(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Calendar,'service_id',service_id,agency_id.value)
+    return result
+
+@app.get("/{agency_id}/agency/",tags=["Static data"])
+async def get_agency(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
+    result = crud.get_agency_data(db,models.Agency,agency_id.value)
     return result
 
 #### END GTFS Static data endpoints ####
