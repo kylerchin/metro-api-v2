@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Json, ValidationError
+from pydantic import BaseModel, Json, ValidationError,validator
 
 from .config import Config
 
@@ -85,6 +85,7 @@ class Shapes(BaseModel):
     shape_pt_sequence: int
     agency_id: str
     geometry: str
+    shape_id_sequence: str
 
 class StopTimeUpdates(BaseModel):
     stop_sequence: int

@@ -140,6 +140,21 @@ def get_bus_shape_list(db,agency_id):
     for row in the_query:
         result.append(row.shape_id)
     return result
+
+def get_bus_shape_all(db,agency_id):
+    the_query = db.query(models.Shapes).filter(models.Shapes.agency_id == agency_id).all()
+    result = []
+    # for row in the_query:
+    #     result.append(row.shape_id)
+    for row in the_query:
+        this_object = {}
+        this_object['type'] = 'Feature' 
+        this_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        del row.geometry
+        this_object['properties'] = row
+        result.append(this_object)
+
+    return result
     
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
@@ -151,7 +166,7 @@ def get_calendar_list(db,agency_id):
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
-    if query == 'list':
+    if query == 'list' or query == 'all':
         the_query = db.query(aliased_table).filter(getattr(aliased_table,'agency_id') == agency_id).all()
     if "geometry" in aliased_table.__table__.columns:
         the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()

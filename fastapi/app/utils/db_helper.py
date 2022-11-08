@@ -1,7 +1,15 @@
 import json
-
+import pandas as pd
+import numpy as np
+from geoalchemy2 import functions,shape
+from shapely.geometry import Point
+from shapely import geometry as geo
 class JsonReturn(dict):
     def __str__(self):
+        # data = list(self.items())
+        # array = np.array(data)
+        # df = pd.DataFrame(array)
+        # return df.to_json(self)
         return json.dumps(self)
 
 
@@ -85,7 +93,8 @@ def vehicle_position_reformat(row):
         if row.position_speed:
             position_info['speed'] = row.position_speed
             del row.position_speed
-
+        if row.geometry:
+            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
         row.trip = trip_info
         row.vehicle = vehicle_info
         row.position = position_info

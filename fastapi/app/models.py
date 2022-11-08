@@ -82,12 +82,14 @@ class Routes(Base):
 
 class Shapes(Base):
     __tablename__ = "shapes"
-    shape_id = Column(String, primary_key=True, index=True)
+    shape_id_sequence = Column(String, primary_key=True, index=True)
+    shape_id = Column(String)
     shape_pt_lat = Column(Float)
     shape_pt_lon = Column(Float)
     geometry = Column(Geometry('POINT', srid=4326))
     shape_pt_sequence = Column(Integer)
     agency_id = Column(String)
+    
 
 class Trips(Base):
     __tablename__ = "trips"
