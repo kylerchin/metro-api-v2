@@ -6,7 +6,6 @@ import requests
 import csv
 import os
 
-
 import pytz
 
 from typing import Dict, List, Optional
@@ -14,6 +13,7 @@ from typing import Dict, List, Optional
 from datetime import timedelta, date, datetime
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
+# from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,6 +26,13 @@ from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
+from starlette.requests import Request
+from starlette.responses import Response
+
+from redis import asyncio as aioredis
 from enum import Enum
 
 # for OAuth2
@@ -43,6 +50,7 @@ from pathlib import Path
 from logzio.handler import LogzioHandler
 import logging
 import typing as t
+
 
 
 class EndpointFilter(logging.Filter):
@@ -104,7 +112,6 @@ templates = Jinja2Templates(directory="app/frontend")
 app.mount("/", StaticFiles(directory="app/frontend"))
 
 # code from https://fastapi-restful.netlify.app/user-guide/repeated-tasks/
-@app.on_event("startup")
 
 def csv_to_json(csvFilePath, jsonFilePath):
     jsonArray = []
@@ -155,6 +162,7 @@ def standardize_string(input_string):
 ####################
 
 @app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"])
+@cache()
 async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
     result = crud.get_all_gtfs_rt_trips(db,agency_id.value)
     return result
@@ -183,9 +191,13 @@ async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_
             return result
 
 @app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
-async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
-    result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value)
+async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db),geojson: bool = False):
+    result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value,geojson)
     return result
+# @app.get("/{agency_id}/vehicle_positions_no_cache/all",tags=["Real-Time data"])
+# async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
+#     result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value,geojson=False)
+#     return result
 
 @app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
 async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
@@ -286,29 +298,33 @@ async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(g
     return result
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
-async def get_bus_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
-    if shape_id == "list":
-        result = crud.get_bus_shape_list(db,agency_id.value)
+async def get_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
+    if shape_id == "all":
+        result = crud.get_shape_all(db,agency_id.value)
+    elif shape_id == "list":
+        result = crud.get_shape_list(db,agency_id.value)
     else: 
         result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])
-async def get_bus_shapes(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
+async def get_calendar_list(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
     if service_id == "list":
         result = crud.get_calendar_list(db,agency_id.value)
     else:
         result = crud.get_gtfs_static_data(db,models.Calendar,'calendar',service_id,agency_id.value)
     return result
 
-@app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
-async def get_bus_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
-    return result
 
 @app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])
-async def get_bus_calendar(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
+async def get_calendar(agency_id: AgencyIdEnum,service_id, db: Session = Depends(get_db)):
     result = crud.get_gtfs_static_data(db,models.Calendar,'service_id',service_id,agency_id.value)
+    return result
+
+
+@app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
+async def get_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/agency/",tags=["Static data"])
@@ -443,3 +459,8 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# @app.on_event("startup")
+# async def startup_redis():
+#     redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
+#     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")

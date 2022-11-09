@@ -85,12 +85,31 @@ def get_all_gtfs_rt_trips(db, agency_id:str):
         result.append(new_row)
     return result
 
-def get_all_gtfs_rt_vehicle_positions(db, agency_id: str):
+def get_all_gtfs_rt_vehicle_positions(db, agency_id: str,geojson:bool):
     the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     result = []
-    for row in the_query:
-        new_row = vehicle_position_reformat(row)
-        result.append(new_row)
+    if geojson == True:
+        this_json = {}
+        print('in true')
+        count = 0
+        features = []
+        for row in the_query:
+            new_row = {}
+            properties = vehicle_position_reformat(row)
+            new_row['properties'] = properties 
+            new_row['type'] = "Feature" 
+            new_row['geometry'] = properties.geometry
+            count += 1
+            features.append(new_row)
+        this_json['metadata'] = {'count': count}
+        this_json['metadata'] = {'title': 'Vehicle Positions'}
+        this_json['type'] = "FeatureCollection"
+        this_json['features'] = features
+        return this_json
+    else:
+        for row in the_query:
+            new_row = vehicle_position_reformat(row)
+            result.append(new_row)
     return result
 
 def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
@@ -134,14 +153,14 @@ def get_agency_data(db, tablename,agency_id):
     the_query = db.query(aliased_table).filter(getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
 
-def get_bus_shape_list(db,agency_id):
+def get_shape_list(db,agency_id):
     the_query = db.query(models.Shapes).filter(models.Shapes.agency_id == agency_id).all()
     result = []
     for row in the_query:
         result.append(row.shape_id)
     return result
 
-def get_bus_shape_all(db,agency_id):
+def get_shape_all(db,agency_id):
     the_query = db.query(models.Shapes).filter(models.Shapes.agency_id == agency_id).all()
     result = []
     # for row in the_query:
@@ -166,12 +185,8 @@ def get_calendar_list(db,agency_id):
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
-    if query == 'list' or query == 'all':
-        the_query = db.query(aliased_table).filter(getattr(aliased_table,'agency_id') == agency_id).all()
-    if "geometry" in aliased_table.__table__.columns:
-        the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
-        for row in the_query:
-            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+    if query == 'list':
+            the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     else:
         the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     return the_query
