@@ -61,11 +61,16 @@ def trip_update_reformat(row):
     return result_row
 
 
-def vehicle_position_reformat(row):
+
+
+def vehicle_position_reformat(row,geojson=False):
         trip_info = {}
         vehicle_info = {}
         position_info = {}
 
+        geojson_row = {}
+        properties = {}
+        row.current_status = get_readable_status(row.current_status)
         if row.trip_id:
             trip_info['trip_id'] = row.trip_id
             del row.trip_id
@@ -95,10 +100,21 @@ def vehicle_position_reformat(row):
             del row.position_speed
         if row.geometry:
             row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+
+        if geojson == True:
+            geojson_row['type'] = 'Feature'
+            if row.geometry:
+                geojson_row['geometry'] = row.geometry
+            properties['trip'] = trip_info
+            properties['vehicle'] = vehicle_info
+            properties['position'] = position_info
+            properties['current_status'] = row.current_status
+            geojson_row['properties'] = properties
+            return geojson_row
         row.trip = trip_info
         row.vehicle = vehicle_info
         row.position = position_info
-        row.current_status = get_readable_status(row.current_status)
+
         return row
 
 def get_readable_status(status):

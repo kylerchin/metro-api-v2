@@ -200,7 +200,7 @@ async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = De
 #     return result
 
 @app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
-async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
+async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, geojson:bool=False,field_value=Optional[str], db: Session = Depends(get_db)):
     # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
     if field_name in get_columns_from_schema('vehicle_position_updates'):
         if field_value == 'list':
@@ -210,13 +210,13 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
         if len(multiple_values) > 1:
             result_array = []
             for value in multiple_values:
-                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,value,agency_id.value)
+                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,value,geojson,agency_id.value)
                 if len(result) == 0:
                     temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
                 result_array.append(temp_result)
             return result_array
         else:
-            result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,field_value,agency_id.value)
+            result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,field_value,geojson,agency_id.value)
             if len(result) == 0:
                 result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
                 return result

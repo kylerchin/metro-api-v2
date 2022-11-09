@@ -94,13 +94,8 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str,geojson:bool):
         count = 0
         features = []
         for row in the_query:
-            new_row = {}
-            properties = vehicle_position_reformat(row)
-            new_row['properties'] = properties 
-            new_row['type'] = "Feature" 
-            new_row['geometry'] = properties.geometry
             count += 1
-            features.append(new_row)
+            features.append(vehicle_position_reformat(row,geojson))
         this_json['metadata'] = {'count': count}
         this_json['metadata'] = {'title': 'Vehicle Positions'}
         this_json['type'] = "FeatureCollection"
@@ -108,20 +103,29 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str,geojson:bool):
         return this_json
     else:
         for row in the_query:
-            new_row = vehicle_position_reformat(row)
+            new_row = vehicle_position_reformat(row,geojson)
             result.append(new_row)
     return result
 
-def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,agency_id: str):
+def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value: str,geojson:bool,agency_id: str):
     if field_value is None:
         the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.agency_id == agency_id).all()
     the_query = db.query(gtfs_models.VehiclePosition).filter(getattr(gtfs_models.VehiclePosition,field_name) == field_value,gtfs_models.VehiclePosition.agency_id == agency_id).all()
-    for row in the_query:
-        if row.geometry:
-            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
     result = []
+    if geojson == True:
+        this_json = {}
+        count = 0
+        features = []
+        for row in the_query:
+            count += 1
+            features.append(vehicle_position_reformat(row,geojson))
+        this_json['metadata'] = {'count': count}
+        this_json['metadata'] = {'title': 'Vehicle Positions'}
+        this_json['type'] = "FeatureCollection"
+        this_json['features'] = features
+        return this_json
     for row in the_query:
-        new_row = vehicle_position_reformat(row)
+        new_row = vehicle_position_reformat(row,geojson)
         result.append(new_row)
     return result
 
