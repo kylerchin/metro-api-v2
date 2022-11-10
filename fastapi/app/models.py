@@ -80,6 +80,12 @@ class Routes(Base):
     route_url = Column(String)
     agency_id = Column(String)
 
+class TripShapes(Base):
+    __tablename__ = "trip_shapes"
+    shape_id = Column(String, primary_key=True, index=True)
+    geometry = Column(Geometry('LINESTRING', srid=4326))
+    agency_id = Column(String)
+
 class Shapes(Base):
     __tablename__ = "shapes"
     shape_id_sequence = Column(String, primary_key=True, index=True)

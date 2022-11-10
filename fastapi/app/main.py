@@ -67,8 +67,8 @@ class EndpointFilter(logging.Filter):
         return record.getMessage().find(self._path) == -1
 
 uvicorn_logger = logging.getLogger("uvicorn.access")
-uvicorn_logger.addFilter(EndpointFilter(path="/"))
-uvicorn_logger.addFilter(EndpointFilter(path="/LACMTA/shapes/"))
+# uvicorn_logger.addFilter(EndpointFilter(path="/"))
+# uvicorn_logger.addFilter(EndpointFilter(path="/LACMTA/shapes/"))
 
 UPDATE_INTERVAL = 300
 
@@ -252,10 +252,6 @@ async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id: AgencyIdEnum,trip
     result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id.value)
     return result
 
-@app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
-async def get_stop_times_by_trip_and_agency(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id.value)
-    return result
 
 #### END GTFS-RT Routes ####
 
@@ -305,6 +301,20 @@ async def get_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get
         result = crud.get_shape_list(db,agency_id.value)
     else: 
         result = crud.get_gtfs_static_data(db,models.Shapes,'shape_id',shape_id,agency_id.value)
+    return result
+
+@app.get("/{agency_id}/trip_shapes/{shape_id}",tags=["Static data"])
+async def get_trip_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
+    print('shape_id')
+    print(shape_id)
+    if shape_id == "all":
+        result = crud.get_trip_shapes_all(db,agency_id.value)
+    elif shape_id == "list":
+        result = crud.get_trip_shapes_list(db,agency_id.value)
+    else: 
+        print('in shape_id')
+        print(shape_id)
+        result = crud.get_trip_shape(db,shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/calendar/{service_id}",tags=["Static data"])

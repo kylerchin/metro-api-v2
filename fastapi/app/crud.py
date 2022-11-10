@@ -176,9 +176,37 @@ def get_shape_all(db,agency_id):
         del row.geometry
         this_object['properties'] = row
         result.append(this_object)
-
     return result
-    
+
+def get_trip_shapes_list(db,agency_id):
+    the_query = db.query(models.TripShapes).filter(models.TripShapes.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        result.append(row.shape_id)
+    return result
+
+def get_trip_shapes_all(db,agency_id):
+    the_query = db.query(models.TripShapes).filter(models.TripShapes.agency_id == agency_id).all()
+    result = []
+    for row in the_query:
+        this_object = {}
+        this_object['type'] = 'Feature' 
+        this_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        this_object['properties'] = row
+        result.append(this_object)
+    return result
+
+def get_trip_shape(db,shape_id,agency_id):
+    the_query = db.query(models.TripShapes).filter(models.TripShapes.shape_id == shape_id,models.TripShapes.agency_id== agency_id).all()
+    for row in the_query:
+        new_object = {}
+        new_object['type'] = 'Feature' 
+        new_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        properties = {}
+        properties = {'shape_id': row.shape_id,'agency_id': row.agency_id}
+        new_object['properties'] = properties
+        return new_object
+
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
     result = []

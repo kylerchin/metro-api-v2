@@ -78,6 +78,11 @@ class Routes(BaseModel):
     route_type: int
     agency_id: str
 
+class TripShapes(BaseModel):
+    shape_id: str
+    geometry: str
+    agency_id: str
+    
 class Shapes(BaseModel):
     shape_id: str
     shape_pt_lat: float
