@@ -85,6 +85,9 @@ PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 class AgencyIdEnum(str, Enum):
     LACMTA = "LACMTA"
     LACMTA_Rail = "LACMTA_Rail"
+class GoPassGroupEnum(str, Enum):
+    ID = "id"
+    SCHOOL = "school"
 
 class TripUpdatesFieldsEnum(str, Enum):
     trip_id = "trip_id"
@@ -305,15 +308,11 @@ async def get_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get
 
 @app.get("/{agency_id}/trip_shapes/{shape_id}",tags=["Static data"])
 async def get_trip_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
-    print('shape_id')
-    print(shape_id)
     if shape_id == "all":
         result = crud.get_trip_shapes_all(db,agency_id.value)
     elif shape_id == "list":
         result = crud.get_trip_shapes_list(db,agency_id.value)
     else: 
-        print('in shape_id')
-        print(shape_id)
         result = crud.get_trip_shape(db,shape_id,agency_id.value)
     return result
 
@@ -349,9 +348,13 @@ async def get_agency(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
 #### Begin Other data endpoints ####
 
 @app.get("/get_gopass_schools",tags=["Other data"])
-async def get_gopass_schools(db: Session = Depends(get_db),show_missing: bool = False):
-    result = crud.get_gopass_schools(db,show_missing)
-    json_compatible_item_data = jsonable_encoder(result)
+async def get_gopass_schools(db: Session = Depends(get_db),show_missing: bool = False,combine_phone:bool = False,groupby_column:GoPassGroupEnum = None):
+    if combine_phone == True:
+        result = crud.get_gopass_schools_combined_phone(db,groupby_column.value)
+        return result
+    else:
+        result = crud.get_gopass_schools(db,show_missing)
+        json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/time")
