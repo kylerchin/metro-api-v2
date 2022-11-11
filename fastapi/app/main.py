@@ -26,9 +26,9 @@ from pydantic import BaseModel, Json, ValidationError
 
 from starlette.middleware.cors import CORSMiddleware
 
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_cache.decorator import cache
+# from fastapi_cache import FastAPICache
+# from fastapi_cache.backends.redis import RedisBackend
+# from fastapi_cache.decorator import cache
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -165,7 +165,7 @@ def standardize_string(input_string):
 ####################
 
 @app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"])
-@cache()
+# @cache()
 async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
     result = crud.get_all_gtfs_rt_trips(db,agency_id.value)
     return result
