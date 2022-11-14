@@ -32,7 +32,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from redis import asyncio as aioredis
+# from redis import asyncio as aioredis
 from enum import Enum
 
 # for OAuth2
