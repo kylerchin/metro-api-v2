@@ -321,7 +321,7 @@ async def get_calendar_list(agency_id: AgencyIdEnum,service_id, db: Session = De
     if service_id == "list":
         result = crud.get_calendar_list(db,agency_id.value)
     else:
-        result = crud.get_gtfs_static_data(db,models.Calendar,'calendar',service_id,agency_id.value)
+        result = crud.get_gtfs_static_data(db,models.Calendar,'service_id',service_id,agency_id.value)
     return result
 
 

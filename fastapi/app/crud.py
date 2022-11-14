@@ -208,7 +208,7 @@ def get_trip_shape(db,shape_id,agency_id):
         return new_object
 
 def get_shape_by_id(db,shape_id,agency_id):
-    the_query = db.query(models.Shapes).filter(models.Shapes.shape_id == shape_id,models.TripShapes.agency_id== agency_id).all()
+    the_query = db.query(models.Shapes).filter(models.Shapes.shape_id == shape_id,models.Shapes.agency_id== agency_id).all()
     for row in the_query:
         new_object = {}
         new_object['type'] = 'Feature' 
