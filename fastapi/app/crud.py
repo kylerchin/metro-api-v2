@@ -207,6 +207,17 @@ def get_trip_shape(db,shape_id,agency_id):
         new_object['properties'] = properties
         return new_object
 
+def get_shape_by_id(db,shape_id,agency_id):
+    the_query = db.query(models.Shapes).filter(models.Shapes.shape_id == shape_id,models.TripShapes.agency_id== agency_id).all()
+    for row in the_query:
+        new_object = {}
+        new_object['type'] = 'Feature' 
+        new_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        properties = {}
+        properties = {'shape_id': row.shape_id,'agency_id': row.agency_id}
+        new_object['properties'] = properties
+        return new_object
+
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
     result = []
@@ -221,6 +232,10 @@ def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
             the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
     else:
         the_query = db.query(aliased_table).filter(getattr(aliased_table,column_name) == query,getattr(aliased_table,'agency_id') == agency_id).all()
+    return the_query
+
+def get_calendar_data_by_id(db,service_id,agency_id):
+    the_query = db.query(models.Calendar).filter(models.Calendar.service_id == service_id,models.Calendar.agency_id == agency_id).all()
     return the_query
 
 def get_bus_stops_by_name(db, name: str):
