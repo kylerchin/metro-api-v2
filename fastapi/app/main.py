@@ -303,7 +303,7 @@ async def get_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get
     elif shape_id == "list":
         result = crud.get_shape_list(db,agency_id.value)
     else: 
-        result = crud.get_shape_by_id(db,models.Shapes,shape_id,agency_id.value)
+        result = crud.get_shape_by_id(db,shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trip_shapes/{shape_id}",tags=["Static data"])
