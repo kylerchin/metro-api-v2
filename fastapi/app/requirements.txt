@@ -19,3 +19,6 @@ pandas
 protobuf==3.19.6
 google
 shapely
+pandas
+# fastapi-cache2[redis]
+# aioredis
