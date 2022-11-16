@@ -12,6 +12,7 @@ from multiprocessing.resource_sharer import stop
 import json
 import requests
 import pandas as pd
+import geopandas as gpd
 
 import timeit
 from datetime import datetime
@@ -161,14 +162,18 @@ def update_gtfs_realtime_data():
                     'agency_id': agency
                 })
         vehicle_position_updates = pd.DataFrame(vehicle_position_update_array)
-        combined_vehicle_position_dataframes.append(vehicle_position_updates)
+        vehicle_position_updates_gdf = gpd.GeoDataFrame(vehicle_position_updates, geometry=gpd.points_from_xy(vehicle_position_updates.position_longitude, vehicle_position_updates.position_latitude))
+        combined_vehicle_position_dataframes.append(vehicle_position_updates_gdf)
     # logging('vehicle_position_updates Data Frame: ' + str(vehicle_position_updates))
     combined_trip_update_df = pd.concat(combined_trip_update_dataframes)
     combined_stop_time_df = pd.concat(combined_stop_time_dataframes)
-    combined_vehicle_position_df = pd.concat(combined_vehicle_position_dataframes)
-    combined_vehicle_position_df.to_sql('vehicle_position_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    combined_vehicle_position_df = gpd.GeoDataFrame(pd.concat(combined_vehicle_position_dataframes, ignore_index=True), geometry='geometry')
+    combined_vehicle_position_df.crs = {'init': 'epsg:4326'}
+    # combined_vehcile_position_df.to_postgis('vehicle_position_updates', engine, if_exists='replace')
+    combined_vehicle_position_df.to_postgis('vehicle_position_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     combined_stop_time_df.to_sql('stop_time_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     combined_trip_update_df['stop_time_json'].astype(str)
+    # combined_trip_update_dfset_index(['Symbol','Date']
     combined_trip_update_df.to_sql('trip_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     process_end = timeit.default_timer()
     # print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")

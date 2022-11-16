@@ -12,9 +12,13 @@ psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
 aiofiles
-# GeoAlchemy2
+GeoAlchemy2==0.10.2
 jinja2
 fastapi-restful[tasks]
 pandas
 protobuf==3.19.6
 google
+shapely
+pandas
+# fastapi-cache2[redis]
+# aioredis

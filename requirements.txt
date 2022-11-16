@@ -20,3 +20,9 @@ numpy
 pandas
 google
 protobuf==3.19.*
+GeoAlchemy2==0.10.2
+shapely
+# redis_om
+# fastapi-redis-cache
+# fastapi-cache2[redis]
+# aioredis

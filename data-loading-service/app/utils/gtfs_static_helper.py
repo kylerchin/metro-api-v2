@@ -5,6 +5,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 # from sqlalchemy.orm import Session,sessionmaker
 from config import Config
+import geopandas as gpd
 from .database_connector import *
 # from .utils.log_helper import *
 # engine = create_engine(Config.DB_URI, echo=False,executemany_mode="values")
@@ -14,7 +15,7 @@ CALENDAR_DATES_URL_BUS = 'https://gitlab.com/LACMTA/gtfs_bus/-/raw/weekly-update
 CALENDAR_DATES_URL_RAIL = 'https://gitlab.com/LACMTA/gtfs_rail/-/raw/master/calendar_dates.txt'
 # session = Session()
 
-list_of_gtfs_static_files = ["routes", "trips", "stops", "calendar", "shapes"]
+list_of_gtfs_static_files = ["agency","routes", "trips", "stops", "calendar", "shapes"]
 # list_of_gtfs_static_files = ["routes", "trips", "stop_times", "stops", "calendar", "shapes"]
 
 def update_calendar_dates():
@@ -33,5 +34,19 @@ def update_gtfs_static_files():
         temp_df_bus['agency_id'] = 'LACMTA'
         temp_df_rail = pd.read_csv(rail_file_path)
         temp_df_rail['agency_id'] = 'LACMTA_Rail'
-        combined_temp_df = pd.concat([temp_df_bus, temp_df_rail])
-        combined_temp_df.to_sql(file,engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+        if file == "stops":
+            temp_gdf_bus = gpd.GeoDataFrame(temp_df_bus, geometry=gpd.points_from_xy(temp_df_bus.stop_lon, temp_df_bus.stop_lat))
+            temp_gdf_rail = gpd.GeoDataFrame(temp_df_rail, geometry=gpd.points_from_xy(temp_df_rail.stop_lon, temp_df_rail.stop_lat))
+            combined_gdf = gpd.GeoDataFrame(pd.concat([temp_gdf_bus, temp_gdf_rail], ignore_index=True),geometry='geometry')
+            stops_combined_gdf.crs = {'init': 'epsg:4326'}
+            stops_combined_gdf.to_postgis(file,engine,schema=Config.TARGET_DB_SCHEMA,if_exists="replace",index=False)
+        if file == "shapes":
+            temp_gdf_bus = gpd.GeoDataFrame(temp_df_bus, geometry=gpd.points_from_xy(temp_df_bus.shape_pt_lon, temp_df_bus.shape_pt_lat))   
+            temp_gdf_rail = gpd.GeoDataFrame(temp_df_rail, geometry=gpd.points_from_xy(temp_df_rail.shape_pt_lon, temp_df_rail.shape_pt_lat))
+            shapes_combined_gdf = gpd.GeoDataFrame(pd.concat([temp_gdf_bus, temp_gdf_rail],ignore_index=True),geometry='geometry')
+            shapes_combined_gdf.crs = {'init': 'epsg:4326'}
+            shapes_combined_gdf.to_postgis(file,engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+
+        else:
+            combined_temp_df = pd.concat([temp_df_bus, temp_df_rail])
+            combined_temp_df.to_sql(file,engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
