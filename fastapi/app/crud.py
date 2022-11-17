@@ -192,6 +192,7 @@ def get_trip_shapes_all(db,agency_id):
         this_object = {}
         this_object['type'] = 'Feature' 
         this_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        del row.geometry
         this_object['properties'] = row
         result.append(this_object)
     return result
@@ -259,7 +260,7 @@ def get_canceled_trips(db, trp_route: str):
 ## go pass data
 def get_gopass_schools_combined_phone(db,groupby_column='id'):
     # the_query = db.query(models.GoPassSchools).filter(models.GoPassSchools.school != None).all()
-    the_query = db.execute("SELECT "+groupby_column+", string_agg(phone, ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1;")    
+    the_query = db.execute("SELECT "+groupby_column+", string_agg(distinct(phone), ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1;")    
     temp_dictionary, temp_array = {}, []
     for rowproxy in the_query:
         # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
