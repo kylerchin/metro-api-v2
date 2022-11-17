@@ -2,7 +2,9 @@ fastapi
 pydantic
 starlette
 typing-extensions
-uvicorn
+# uvicorn
+uvicorn[standard]
+gunicorn
 requests
 python-dotenv
 pytz
