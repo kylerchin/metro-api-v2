@@ -134,12 +134,9 @@ def update_gtfs_realtime_data():
                 'agency_id': agency,
                 'timestamp': entity.trip_update.timestamp
             })
-        stop_time_df = pd.DataFrame(stop_time_array).astype({'arrival': 'int8', 'departure': 'int8', 'stop_sequence': 'int8', 'schedule_relationship': 'int8'})
-        del stop_time_array
-        # stop_time_df = pd.DataFrame(stop_time_array, columns=['trip_id', 'stop_id', 'arrival', 'departure', 'stop_sequence', 'agency_id', 'schedule_relationship'], dtype='[string, string, int8, int8, int8, string, int8]')
+        stop_time_df = pd.DataFrame(stop_time_array)
         combined_stop_time_dataframes.append(stop_time_df)
-        trip_update_df = pd.DataFrame(trip_update_array).astype({'direction_id': 'int8', 'schedule_relationship': 'int8','timestamp': 'int8'})
-        del trip_update_array
+        trip_update_df = pd.DataFrame(trip_update_array)
         combined_trip_update_dataframes.append(trip_update_df)
 
         vehicle_positions_feed = FeedMessage()
@@ -164,22 +161,20 @@ def update_gtfs_realtime_data():
                     'vehicle_label': entity.vehicle.vehicle.label,
                     'agency_id': agency
                 })
-        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array).astype({'current_stop_sequence': 'int8', 'current_status': 'int8', 'timestamp': 'int8', 'position_latitude': 'float16', 'position_longitude': 'float16', 'position_bearing': 'float16', 'position_speed': 'float16'})
-        del vehicle_position_update_array
-
+        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array)
         vehicle_position_updates_gdf = gpd.GeoDataFrame(vehicle_position_updates, geometry=gpd.points_from_xy(vehicle_position_updates.position_longitude, vehicle_position_updates.position_latitude))
         combined_vehicle_position_dataframes.append(vehicle_position_updates_gdf)
     # logging('vehicle_position_updates Data Frame: ' + str(vehicle_position_updates))
     combined_trip_update_df = pd.concat(combined_trip_update_dataframes)
     combined_stop_time_df = pd.concat(combined_stop_time_dataframes)
     combined_vehicle_position_df = gpd.GeoDataFrame(pd.concat(combined_vehicle_position_dataframes, ignore_index=True), geometry='geometry')
-    combined_vehicle_position_df.crs = 'EPSG:4326'
+    combined_vehicle_position_df.crs = {'init': 'epsg:4326'}
     # combined_vehcile_position_df.to_postgis('vehicle_position_updates', engine, if_exists='replace')
-    combined_vehicle_position_df.to_postgis('vehicle_position_updates',engine,index=True,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
-    combined_stop_time_df.to_sql('stop_time_updates',engine,index=True,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    combined_vehicle_position_df.to_postgis('vehicle_position_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    combined_stop_time_df.to_sql('stop_time_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     combined_trip_update_df['stop_time_json'].astype(str)
     # combined_trip_update_dfset_index(['Symbol','Date']
-    combined_trip_update_df.to_sql('trip_updates',engine,index=True,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    combined_trip_update_df.to_sql('trip_updates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
     process_end = timeit.default_timer()
     # print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")
     print('===GTFS Update process took {} seconds'.format(process_end - process_start)+"===")

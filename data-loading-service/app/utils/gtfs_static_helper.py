@@ -24,7 +24,7 @@ def update_calendar_dates():
     calendar_dates_df_rail = pd.read_csv(CALENDAR_DATES_URL_RAIL)
     calendar_dates_df_rail['agency_id'] = 'LACMTA_Rail'
     calendar_dates_df = pd.concat([calendar_dates_df_bus, calendar_dates_df_rail])
-    calendar_dates_df.to_sql('calendar_dates',engine,index=True,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    calendar_dates_df.to_sql('calendar_dates',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
 
 def update_gtfs_static_files():
     for file in list_of_gtfs_static_files:
@@ -38,13 +38,13 @@ def update_gtfs_static_files():
             temp_gdf_bus = gpd.GeoDataFrame(temp_df_bus, geometry=gpd.points_from_xy(temp_df_bus.stop_lon, temp_df_bus.stop_lat))
             temp_gdf_rail = gpd.GeoDataFrame(temp_df_rail, geometry=gpd.points_from_xy(temp_df_rail.stop_lon, temp_df_rail.stop_lat))
             combined_gdf = gpd.GeoDataFrame(pd.concat([temp_gdf_bus, temp_gdf_rail], ignore_index=True),geometry='geometry')
-            stops_combined_gdf.crs = 'EPSG:4326'
+            stops_combined_gdf.crs = {'init': 'epsg:4326'}
             stops_combined_gdf.to_postgis(file,engine,schema=Config.TARGET_DB_SCHEMA,if_exists="replace",index=False)
         if file == "shapes":
             temp_gdf_bus = gpd.GeoDataFrame(temp_df_bus, geometry=gpd.points_from_xy(temp_df_bus.shape_pt_lon, temp_df_bus.shape_pt_lat))   
             temp_gdf_rail = gpd.GeoDataFrame(temp_df_rail, geometry=gpd.points_from_xy(temp_df_rail.shape_pt_lon, temp_df_rail.shape_pt_lat))
             shapes_combined_gdf = gpd.GeoDataFrame(pd.concat([temp_gdf_bus, temp_gdf_rail],ignore_index=True),geometry='geometry')
-            shapes_combined_gdf.crs = 'EPSG:4326'
+            shapes_combined_gdf.crs = {'init': 'epsg:4326'}
             shapes_combined_gdf.to_postgis(file,engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
 
         else:
