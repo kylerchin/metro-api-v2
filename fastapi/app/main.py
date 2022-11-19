@@ -67,8 +67,8 @@ class EndpointFilter(logging.Filter):
         return record.getMessage().find(self._path) == -1
 
 uvicorn_logger = logging.getLogger("uvicorn.access")
-# uvicorn_logger.addFilter(EndpointFilter(path="/"))
-# uvicorn_logger.addFilter(EndpointFilter(path="/LACMTA/shapes/"))
+uvicorn_logger.addFilter(EndpointFilter(path="/LACMTA/shapes/"))
+uvicorn_logger.addFilter(EndpointFilter(path="/agencies/lametro/"))
 
 UPDATE_INTERVAL = 300
 

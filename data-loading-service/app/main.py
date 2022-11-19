@@ -7,7 +7,6 @@ import threading
 import time
 from schedule import every, repeat, run_pending
 import pandas as pd
-
 # import schedule
 
 @repeat(every(60).seconds)
@@ -49,5 +48,9 @@ def initial_load():
 if __name__ == '__main__':
     initial_load()
     while True:
-        run_pending()
-    
+        try:
+            run_pending()
+        except Execption as e:
+            print('Error running scheduler: ' + str(e))
+        time.sleep(.4)
+        
