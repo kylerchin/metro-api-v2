@@ -48,9 +48,4 @@ def initial_load():
 if __name__ == '__main__':
     initial_load()
     while True:
-        try:
-            run_pending()
-        except Execption as e:
-            print('Error running scheduler: ' + str(e))
-        time.sleep(.4)
-        
+        run_pending()

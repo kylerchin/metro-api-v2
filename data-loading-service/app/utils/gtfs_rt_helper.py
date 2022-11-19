@@ -5,7 +5,7 @@ except ImportError:
 from cgi import print_arguments
 import datetime
 from multiprocessing.resource_sharer import stop
-
+import time 
 # from ..gtfs_rt import *
 # from ..models import *
 
@@ -186,6 +186,7 @@ def update_gtfs_realtime_data():
     del combined_trip_update_dataframes
     del combined_stop_time_dataframes
     del combined_vehicle_position_dataframes
+
 
 if __name__ == "__main__":
     process_start = timeit.default_timer()
