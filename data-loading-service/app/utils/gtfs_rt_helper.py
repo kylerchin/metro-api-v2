@@ -164,7 +164,7 @@ def update_gtfs_realtime_data():
                     'vehicle_label': entity.vehicle.vehicle.label,
                     'agency_id': agency
                 })
-        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array).astype({'current_stop_sequence': 'int8', 'current_status': 'int8', 'timestamp': 'int8', 'position_latitude': 'float16', 'position_longitude': 'float16', 'position_bearing': 'float16', 'position_speed': 'float16'})
+        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array).astype({'current_stop_sequence': 'int8', 'current_status': 'int8', 'timestamp': 'int8'})
         del vehicle_position_update_array
 
         vehicle_position_updates_gdf = gpd.GeoDataFrame(vehicle_position_updates, geometry=gpd.points_from_xy(vehicle_position_updates.position_longitude, vehicle_position_updates.position_latitude))
