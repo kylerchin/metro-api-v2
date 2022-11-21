@@ -7,7 +7,6 @@ import threading
 import time
 from schedule import every, repeat, run_pending
 import pandas as pd
-
 # import schedule
 
 @repeat(every(60).seconds)
@@ -50,4 +49,3 @@ if __name__ == '__main__':
     initial_load()
     while True:
         run_pending()
-    
