@@ -82,10 +82,13 @@ def connect_to_swiftly(service, endpoint):
         print('Connecting to Swiftly API: ' + swiftly_endpoint)
         response = requests.get(swiftly_endpoint, headers=header)
         print('Response status code: ' + str(response.status_code))
-        return response.content
+        if (response.status_code == 200):
+            return response.content
+        else:
+            return False
     except Exception as e:
         print.exception('Error connecting to Swiftly API: ' + str(e))
-        return
+        return False
 
 def get_agency_id(service):
     if (service == 'bus'):
@@ -99,10 +102,12 @@ def update_gtfs_realtime_data():
     combined_trip_update_dataframes = []
     combined_stop_time_dataframes = []
     combined_vehicle_position_dataframes = []
-
+    
     for agency in SWIFTLY_AGENCY_IDS:
         feed = FeedMessage()
         response_data = connect_to_swiftly(SERVICE_DICT[agency], SWIFTLY_GTFS_RT_TRIP_UPDATES)
+        if response_data == False:
+            break
         feed.ParseFromString(response_data)
         
         trip_update_array = []
