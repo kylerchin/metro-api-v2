@@ -21,3 +21,4 @@ GeoAlchemy2==0.10.2
 # fastapi-restful[tasks]
 google
 protobuf==3.19.6
+polyline
