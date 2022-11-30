@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 def set_db_schema():
     try:
         current_environment = os.environ.get('RUNNING_ENV')
-        if current_environment != 'prod':
+        if current_environment == 'prod':
             return 'metro_api'
         else:
             return 'metro_api_dev'
