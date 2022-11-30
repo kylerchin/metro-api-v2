@@ -9,12 +9,12 @@ from schedule import every, repeat, run_pending
 import pandas as pd
 # import schedule
 
-# @repeat(every(120).seconds)
-# def gtfs_rt_scheduler():
-#     try:
-#         gtfs_rt_helper.update_gtfs_realtime_data()
-#     except Exception as e:
-#         print('Error updating GTFS-RT data: ' + str(e))
+@repeat(every(60).seconds)
+def gtfs_rt_scheduler():
+    try:
+        gtfs_rt_helper.update_gtfs_realtime_data()
+    except Exception as e:
+        print('Error updating GTFS-RT data: ' + str(e))
 
 @repeat(every(1).day)
 def go_pass_data_scheduler():

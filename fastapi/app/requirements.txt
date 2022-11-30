@@ -21,5 +21,6 @@ protobuf==3.19.6
 google
 shapely
 pandas
+polyline
 # fastapi-cache2[redis]
 # aioredis
