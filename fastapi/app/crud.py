@@ -1,3 +1,4 @@
+import polyline
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
@@ -192,6 +193,7 @@ def get_trip_shapes_all(db,agency_id):
         this_object = {}
         this_object['type'] = 'Feature' 
         this_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        this_object['encoded_polyline'] = polyline.encode(this_object['geometry']['coordinates'],geojson=False)
         del row.geometry
         this_object['properties'] = row
         result.append(this_object)
@@ -202,7 +204,9 @@ def get_trip_shape(db,shape_id,agency_id):
     for row in the_query:
         new_object = {}
         new_object['type'] = 'Feature' 
-        new_object['geometry']= JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+        this_object_geom = geo.mapping(shape.to_shape((row.geometry)))
+        new_object['geometry']= JsonReturn(this_object_geom)
+        new_object['encoded_polyline'] = polyline.encode(new_object['geometry']['coordinates'],geojson=False)
         properties = {}
         properties = {'shape_id': row.shape_id,'agency_id': row.agency_id}
         new_object['properties'] = properties
