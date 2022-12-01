@@ -139,11 +139,11 @@ def update_gtfs_realtime_data():
                 'agency_id': agency,
                 'timestamp': entity.trip_update.timestamp
             })
-        stop_time_df = pd.DataFrame(stop_time_array).astype({'arrival': 'int8', 'departure': 'int8', 'stop_sequence': 'int8', 'schedule_relationship': 'int8','timestamp': 'uint64'})
+        stop_time_df = pd.DataFrame(stop_time_array).astype({'arrival': 'int8', 'departure': 'int8', 'stop_sequence': 'int8', 'schedule_relationship': 'int8'})
         del stop_time_array
         # stop_time_df = pd.DataFrame(stop_time_array, columns=['trip_id', 'stop_id', 'arrival', 'departure', 'stop_sequence', 'agency_id', 'schedule_relationship'], dtype='[string, string, int8, int8, int8, string, int8]')
         combined_stop_time_dataframes.append(stop_time_df)
-        trip_update_df = pd.DataFrame(trip_update_array).astype({'direction_id': 'int8', 'schedule_relationship': 'int8', 'timestamp': 'uint64'})
+        trip_update_df = pd.DataFrame(trip_update_array).astype({'direction_id': 'int8', 'schedule_relationship': 'int8'})
         del trip_update_array
         combined_trip_update_dataframes.append(trip_update_df)
 
@@ -169,7 +169,7 @@ def update_gtfs_realtime_data():
                     'vehicle_label': entity.vehicle.vehicle.label,
                     'agency_id': agency
                 })
-        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array).astype({'current_stop_sequence': 'int8', 'current_status': 'int8', 'timestamp': 'uint64'})
+        vehicle_position_updates = pd.DataFrame(vehicle_position_update_array).astype({'current_stop_sequence': 'int8', 'current_status': 'int8'})
         del vehicle_position_update_array
 
         vehicle_position_updates_gdf = gpd.GeoDataFrame(vehicle_position_updates, geometry=gpd.points_from_xy(vehicle_position_updates.position_longitude, vehicle_position_updates.position_latitude))
