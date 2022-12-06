@@ -28,10 +28,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # stop_times utils
-def get_stop_times_by_route_code(db, route_code: int,agency_id: str):
-    the_query = db.query(models.StopTimes).filter(models.StopTimes.route_code == route_code,models.StopTimes.agency_id == agency_id).all()
-    # user_dict = models.User[username]
-    # return schemas.UserInDB(**user_dict)
+def get_stop_times_by_route_code(db, route_code: str,agency_id: str):
+    if route_code == 'list':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).distinct(models.StopTimes.route_code).all()
+        result = []
+        for row in the_query:
+            result.append(row.route_code)
+        return result
+    elif route_code == 'all':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.route_code == route_code,models.StopTimes.agency_id == agency_id).all()
     return the_query
 
 def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
@@ -147,10 +155,34 @@ def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
     return the_query
     
 
-def get_bus_stops(db, stop_code: int,agency_id: str):
-    the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code,models.Stops.agency_id == agency_id).all()
+def get_bus_stop_id(db, stop_code: str,agency_id: str):
+    if stop_code == 'list':
+        the_query = db.query(models.Stops).filter(models.Stops.agency_id == agency_id).all()
+        result = []
+        for row in the_query:
+            result.append(row.stop_code)
+        return result
+    elif stop_code == 'all':
+        the_query = db.query(models.Stops).filter(models.Stops.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.Stops).filter(models.Stops.stop_code == stop_code,models.Stops.agency_id == agency_id).all()
+    return the_query
     # user_dict = models.User[username]
     # return schemas.UserInDB(**user_dict)
+
+def get_trips_data(db,trip_id: str,agency_id: str):
+    if trip_id == 'list':
+        the_query = db.query(models.Trips).filter(models.Trips.agency_id == agency_id).all()
+        result = []
+        for row in the_query:
+            result.append(row.trip_id)
+        return result
+    elif trip_id == 'all':
+        the_query = db.query(models.Trips).filter(models.Trips.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.Trips).filter(models.Trips.trip_id == trip_id,models.Trips.agency_id == agency_id).all()
     return the_query
 
 def get_agency_data(db, tablename,agency_id):
@@ -222,6 +254,20 @@ def get_shape_by_id(db,shape_id,agency_id):
         properties = {'shape_id': row.shape_id,'agency_id': row.agency_id}
         new_object['properties'] = properties
         return new_object
+
+def get_routes_by_route_id(db,route_id,agency_id):
+    if route_id == 'list':
+        the_query = db.query(models.Routes).filter(models.Routes.agency_id == agency_id).distinct(models.Routes.route_id).all()
+        result = []
+        for row in the_query:
+            result.append(row.route_id)
+        return result
+    elif route_id == 'all':
+        the_query = db.query(models.Routes).filter(models.Routes.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.Routes).filter(models.Routes.route_id == route_id,models.Routes.agency_id == agency_id).all()
+        return the_query
 
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
