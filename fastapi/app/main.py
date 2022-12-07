@@ -287,8 +287,8 @@ async def get_stop_times_by_route_code_and_agency(agency_id: AgencyIdEnum,route_
     return result
 
 @app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
-async def get_bus_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stop_id(db,stop_id,agency_id.value)
+async def get_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
+    result = crud.get_stops_id(db,stop_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trips/{trip_id}",tags=["Static data"])
@@ -297,13 +297,11 @@ async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(g
     return result
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
-async def get_shapes(agency_id: AgencyIdEnum,shape_id, db: Session = Depends(get_db)):
-    if shape_id == "all":
-        result = crud.get_shape_all(db,agency_id.value)
-    elif shape_id == "list":
-        result = crud.get_shape_list(db,agency_id.value)
-    else: 
-        result = crud.get_shape_by_id(db,shape_id,agency_id.value)
+async def get_shapes(agency_id: AgencyIdEnum,shape_id, geojson: bool = False,db: Session = Depends(get_db)):
+    if shape_id == "list":
+        result = crud.get_trip_shapes_list(db,agency_id.value)
+    else:
+        result = crud.get_shape_by_id(db,geojson,shape_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trip_shapes/{shape_id}",tags=["Static data"])
