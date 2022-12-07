@@ -288,12 +288,12 @@ async def get_stop_times_by_route_code_and_agency(agency_id: AgencyIdEnum,route_
 
 @app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
 async def get_bus_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
-    result = crud.get_bus_stops(db,stop_id,agency_id.value)
+    result = crud.get_bus_stop_id(db,stop_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/trips/{trip_id}",tags=["Static data"])
 async def get_bus_trips(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Trips,'trip_id',trip_id,agency_id.value)
+    result = crud.get_trips_data(db,trip_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/shapes/{shape_id}",tags=["Static data"])
@@ -333,7 +333,7 @@ async def get_calendar(agency_id: AgencyIdEnum,service_id, db: Session = Depends
 
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
 async def get_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_static_data(db,models.Routes,'route_id',route_id,agency_id.value)
+    result = crud.get_routes_by_route_id(db,route_id,agency_id.value)
     return result
 
 @app.get("/{agency_id}/agency/",tags=["Static data"])
