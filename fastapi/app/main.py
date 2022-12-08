@@ -291,11 +291,6 @@ async def get_stop_times_by_trip_id_and_agency(agency_id: AgencyIdEnum,trip_id, 
     result = crud.get_stop_times_by_trip_id(db,trip_id,agency_id.value)
     return result
 
-@app.get("/{agency_id}/stop_times/route_id/{route_id}",tags=["Static data"])
-async def get_stop_times_by_route_id_and_agency(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
-    result = crud.get_stop_times_by_route_id(db,route_id,agency_id.value)
-    return result
-
 @app.get("/{agency_id}/stops/{stop_id}",tags=["Static data"])
 async def get_stops(agency_id: AgencyIdEnum,stop_id, db: Session = Depends(get_db)):
     result = crud.get_stops_id(db,stop_id,agency_id.value)
