@@ -33,8 +33,7 @@ def get_stop_times_by_route_code(db, route_code: str,agency_id: str):
         the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).distinct(models.StopTimes.route_code).all()
         result = []
         for row in the_query:
-            if row.route_code != " ":
-                result.append(row.route_code)
+            result.append(row.route_code)
         return result
     elif route_code == 'all':
         the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).all()
@@ -44,10 +43,40 @@ def get_stop_times_by_route_code(db, route_code: str,agency_id: str):
     return the_query
 
 def get_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
-    the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id,models.StopTimes.agency_id == agency_id).all()
-    # user_dict = models.User[username]route_code
-    # return schemas.UserInDB(**user_dict)
+    if trip_id == 'list':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).distinct(models.StopTimes.trip_id).all()
+        result = []
+        for row in the_query:
+            result.append(row.trip_id)
+        return result
+    elif trip_id == 'all':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id,models.StopTimes.agency_id == agency_id).all()
     return the_query
+
+def get_stop_times_by_route_id(db, route_id: str,agency_id: str):
+    if route_id == 'list':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).distinct(models.StopTimes.route_id).all()
+        result = []
+        for row in the_query:
+            result.append(row.route_id)
+        return result
+    elif route_id == 'all':
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.agency_id == agency_id).all()
+        return the_query
+    else:
+        the_query = db.query(models.StopTimes).filter(models.StopTimes.route_id == route_id,models.StopTimes.agency_id == agency_id).all()
+    return the_query
+
+
+
+# def get_stop_times_by_trip_id_old(db, trip_id: str,agency_id: str):
+#     the_query = db.query(models.StopTimes).filter(models.StopTimes.trip_id == trip_id,models.StopTimes.agency_id == agency_id).all()
+#     # user_dict = models.User[username]route_code
+#     # return schemas.UserInDB(**user_dict)
+#     return the_query
 
 def temp_solution(val):
     return True
