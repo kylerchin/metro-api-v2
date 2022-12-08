@@ -39,7 +39,7 @@ class StopTimes(Base):
     arrival_time = Column(String)
     departure_time = Column(String)
     stop_id = Column(Integer)
-    stop_sequence = Column(Integer)
+    stop_sequence = Column(Integer,primary_key=True)
     stop_headsign = Column(String)
     pickup_type = Column(Integer)
     drop_off_type = Column(Integer)
@@ -49,7 +49,7 @@ class StopTimes(Base):
     timepoint = Column(Integer)
     bay_num = Column(Integer)
     agency_id = Column(String)
-    trip_id = Column(Integer, primary_key=True, index=True)
+    trip_id = Column(Integer, primary_key=True)
 
 class Stops(Base):
     __tablename__ = "stops"
