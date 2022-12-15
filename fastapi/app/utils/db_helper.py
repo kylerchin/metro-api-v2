@@ -21,17 +21,17 @@ def trip_update_reformat(row):
 
     trip = {}
     if row.trip_id:
-        trip['tripid'] = row.trip_id
+        trip['trip_id'] = row.trip_id
     if row.start_time:
-        trip['startTime'] = row.start_time
+        trip['start_time'] = row.start_time
     if row.start_date:
-        trip['startDate'] = row.start_date
+        trip['start_date'] = row.start_date
     if row.schedule_relationship:
-        trip['scheduleRelationship'] = get_readable_schedule_relationship(row.schedule_relationship)
+        trip['schedule_relationship'] = get_readable_schedule_relationship(row.schedule_relationship)
     if row.route_id:
-        trip['routeId'] = row.route_id
+        trip['route_id'] = row.route_id
     if row.direction_id:
-        trip['directionId'] = row.direction_id
+        trip['direction_id'] = row.direction_id
     trip_update['trip'] = trip
 
     stop_time_updates = []
@@ -41,7 +41,7 @@ def trip_update_reformat(row):
         for stop_time in json.loads(clean_stop_time_json):
             this_stop_time = {}
             if stop_time['stop_sequence']:
-                this_stop_time['stopSequence'] = stop_time['stop_sequence']
+                this_stop_time['stop_sequence'] = stop_time['stop_sequence']
             if stop_time['arrival']:
                 arrival = {}
                 arrival['time'] = stop_time['arrival']
@@ -52,12 +52,12 @@ def trip_update_reformat(row):
                 this_stop_time['departure'] = departure
                 this_stop_time['departure']['time'] = stop_time['departure']
             if stop_time['schedule_relationship']:
-                this_stop_time['scheduleRelationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
+                this_stop_time['schedule_relationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
             if stop_time['stop_id']:
                 this_stop_time['stopId'] = stop_time['stop_id']
             stop_time_updates.append(this_stop_time)
-    trip_update['stopTimeUpdates'] = stop_time_updates
-    result_row['tripUpdate'] = trip_update
+    trip_update['stop_time_updates'] = stop_time_updates
+    result_row['trip_update'] = trip_update
     return result_row
 
 
