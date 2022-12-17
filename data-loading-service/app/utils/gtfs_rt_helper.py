@@ -116,6 +116,9 @@ def update_gtfs_realtime_data():
         for entity in feed.entity:
             this_stop_time_json_array = []            
             for stop_time_update in entity.trip_update.stop_time_update:
+                schedule_relationship_value = -1
+                if stop_time_update.schedule_relationship:
+                    schedule_relationship_value = stop_time_update.schedule_relationship
                 this_stop_time_json={
                     'trip_id': entity.trip_update.trip.trip_id,
                     'stop_id': stop_time_update.stop_id,
@@ -123,7 +126,7 @@ def update_gtfs_realtime_data():
                     'departure': stop_time_update.departure.time,
                     'stop_sequence': stop_time_update.stop_sequence,
                     'agency_id': agency,
-                    'schedule_relationship': stop_time_update.schedule_relationship
+                    'schedule_relationship': schedule_relationship_value
                 }
                 stop_time_array.append(this_stop_time_json)
                 this_stop_time_json_array.append(this_stop_time_json)
