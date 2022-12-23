@@ -153,9 +153,7 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
     return result
 
 def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agency_id: str):
-
-    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()
-    
+    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()   
     result = []
     if geojson == True:
         this_json = {}
@@ -171,7 +169,7 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
         return this_json
     for row in the_query:
         if row.trip_id is None:
-            return 'No trip data for this vehicle' + str(stop_id)
+            return 'No trip data for this vehicle id: ' + str(vehicle_id)
         new_row = vehicle_position_reformat_for_trip_details(row,geojson)
         stop_name_query = db.query(models.Stops.stop_name).filter(models.Stops.stop_id == new_row.stop_id,models.Stops.agency_id == agency_id).first()
         new_row.stop_name = stop_name_query['stop_name']
