@@ -206,8 +206,6 @@ async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = De
 @app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
 async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, geojson:bool=False,field_value=Optional[str], db: Session = Depends(get_db)):
     # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
-    print('field_value')
-    print(field_value)
     result = ""
     if field_name in get_columns_from_schema('vehicle_position_updates'):
         if field_value == 'list':
@@ -230,6 +228,12 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
                 result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
                 return result
             return result
+
+@app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data","Static Data"])
+async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool=False,db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id,geojson,agency_id.value)
+    # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
+    return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
@@ -255,12 +259,6 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
         return {"canceled_trips_summary":canceled_trips_summary,
                 "total_canceled_trips":total_canceled_trips,
                 "last_updated":update_time}
-
-@app.get("/{agency_id}/stop_times/{trip_id}",tags=["Real-Time data"])
-async def get_gtfs_rt_stop_times_updates_by_trip_id(agency_id: AgencyIdEnum,trip_id, db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_stop_times_by_trip_id(db,trip_id,agency_id.value)
-    return result
-
 
 #### END GTFS-RT Routes ####
 
@@ -373,7 +371,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.9"}
+#     return {"Metro API Version": "2.1.11"}
 
 # Frontend Routing
 
@@ -447,7 +445,6 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 
 @app.on_event("startup")
 async def startup_event():
-    print("Starting up...")
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_error_logger = logging.getLogger("uvicorn.error")
     logger = logging.getLogger("uvicorn.app")

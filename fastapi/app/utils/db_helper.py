@@ -20,14 +20,15 @@ def trip_update_reformat(row):
     trip_update['timestamp'] = row.timestamp
 
     trip = {}
+    row.trip_assigned = False
     if row.trip_id:
         trip['trip_id'] = row.trip_id
+        row.trip_assigned = True
     if row.start_time:
         trip['start_time'] = row.start_time
     if row.start_date:
         trip['start_date'] = row.start_date
-    if row.schedule_relationship:
-        trip['schedule_relationship'] = get_readable_schedule_relationship(row.schedule_relationship)
+    trip['schedule_relationship'] = get_readable_schedule_relationship(row.schedule_relationship)
     if row.route_id:
         trip['route_id'] = row.route_id
     if row.direction_id:
@@ -54,20 +55,16 @@ def trip_update_reformat(row):
             if stop_time['schedule_relationship']:
                 this_stop_time['schedule_relationship'] = get_readable_schedule_relationship(stop_time['schedule_relationship'])
             if stop_time['stop_id']:
-                this_stop_time['stopId'] = stop_time['stop_id']
+                this_stop_time['stop_id'] = stop_time['stop_id']
             stop_time_updates.append(this_stop_time)
     trip_update['stop_time_updates'] = stop_time_updates
     result_row['trip_update'] = trip_update
     return result_row
 
-
-
-
 def vehicle_position_reformat(row,geojson=False):
         trip_info = {}
         vehicle_info = {}
         position_info = {}
-
         geojson_row = {}
         properties = {}
         row.current_status = get_readable_status(row.current_status)
@@ -117,6 +114,65 @@ def vehicle_position_reformat(row,geojson=False):
 
         return row
 
+
+def vehicle_position_reformat_for_trip_details(row,geojson=False):
+        trip_info = {}
+        position_info = {}
+
+        geojson_row = {}
+        properties = {}
+        row.current_status = get_readable_status(row.current_status)
+        row.trip_assigned = False
+        if row.trip_id:
+            row.trip_assigned = True
+        if row.trip_route_id:
+            del row.trip_route_id 
+        if row.vehicle_id:
+            del row.vehicle_id
+        if row.position_latitude:
+            position_info['latitude'] = row.position_latitude
+            del row.position_latitude
+        if row.position_longitude:
+            position_info['longitude'] = row.position_longitude
+            del row.position_longitude
+        if row.position_bearing:
+            del row.position_bearing
+        if row.position_speed:
+            del row.position_speed
+        if row.geometry:
+            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+
+        if geojson == True:
+            geojson_row['type'] = 'Feature'
+            if row.geometry:
+                geojson_row['geometry'] = row.geometry
+            properties['trip'] = trip_info
+            properties['position'] = position_info
+            properties['current_status'] = row.current_status
+            geojson_row['properties'] = properties
+            return geojson_row
+        # row.trip = trip_info
+        row.position = position_info
+        return row
+
+def upcoming_stop_time_reformat(stop_time_update):
+    if stop_time_update != None:
+        if stop_time_update.trip_updates:
+            sanitized_stop_time_json = stop_time_update.trip_updates.stop_time_json.replace("'", '"')
+            update_json = json.loads(sanitized_stop_time_json)
+            for row in update_json:
+                new_stop_time_object = {}
+                print(row)
+                if row['stop_sequence'] == stop_time_update.stop_sequence:
+                    if row['arrival']:
+                        new_stop_time_object['arrival'] = row['arrival']
+                    if row['departure']:
+                        new_stop_time_object['departure'] = row['departure']
+                    new_stop_time_object['schedule_relationship'] = get_readable_schedule_relationship(row['schedule_relationship'])
+                    new_stop_time_object['stop_id'] = row['stop_id']
+                    new_stop_time_object['stop_sequence'] = row['stop_sequence']
+                    return new_stop_time_object
+            
 def get_readable_status(status):
     if status == 0:
         return 'INCOMING_AT'
@@ -126,6 +182,8 @@ def get_readable_status(status):
         return 'IN_TRANSIT_TO'
 
 def get_readable_schedule_relationship(schedule_relationship):
+    if schedule_relationship == -1:
+        return ''
     if schedule_relationship == 0:
         return 'SCHEDULED'
     if schedule_relationship == 1:

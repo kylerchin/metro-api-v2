@@ -152,6 +152,35 @@ def get_gtfs_rt_vehicle_positions_by_field_name(db, field_name: str,field_value:
         result.append(new_row)
     return result
 
+def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agency_id: str):
+    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()   
+    result = []
+    if geojson == True:
+        this_json = {}
+        count = 0
+        features = []
+        for row in the_query:
+            count += 1
+            features.append(vehicle_position_reformat(row,geojson))
+        this_json['metadata'] = {'count': count}
+        this_json['metadata'] = {'title': 'Vehicle Positions'}
+        this_json['type'] = "FeatureCollection"
+        this_json['features'] = features
+        return this_json
+    for row in the_query:
+        if row.trip_id is None:
+            message_object = {'message': 'No trip data for this vehicle id: ' + str(vehicle_id)}
+            return message_object
+        new_row = vehicle_position_reformat_for_trip_details(row,geojson)
+        stop_name_query = db.query(models.Stops.stop_name).filter(models.Stops.stop_id == new_row.stop_id,models.Stops.agency_id == agency_id).first()
+        new_row.stop_name = stop_name_query['stop_name']
+        upcoming_stop_time_update_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == new_row.trip_id,gtfs_models.StopTimeUpdate.stop_sequence == new_row.current_stop_sequence).first()
+        new_row.upcoming_stop_time_update = upcoming_stop_time_reformat(upcoming_stop_time_update_query)
+        route_code_query = db.query(models.StopTimes.route_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
+        new_row.route_code = route_code_query['route_code']
+        result.append(new_row)
+    return result
+
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
     result = []
@@ -160,13 +189,6 @@ def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
         result.append(new_row)
     return result
 
-
-def get_gtfs_rt_stop_times_by_trip_id(db, trip_id: str,agency_id: str):
-    if trip_id is None:
-        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
-    else:
-        the_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == trip_id,gtfs_models.StopTimeUpdate.agency_id == agency_id).all()
-    return the_query
     
 
 def get_stops_id(db, stop_code: str,agency_id: str):
