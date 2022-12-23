@@ -445,7 +445,6 @@ def read_user(username: str, db: Session = Depends(get_db),token: str = Depends(
 
 @app.on_event("startup")
 async def startup_event():
-    print("Starting up...")
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_error_logger = logging.getLogger("uvicorn.error")
     logger = logging.getLogger("uvicorn.app")
