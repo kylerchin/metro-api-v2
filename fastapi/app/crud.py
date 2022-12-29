@@ -183,6 +183,7 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
         new_row.route_code = route_code_query['route_code']
         new_row.destination_code = destination_code_query['destination_code']
         result.append(new_row)
+        return result
     if result == []:
         message_object = [{'message': 'No vehicle data for this vehicle id: ' + str(vehicle_id)}]
         return message_object
