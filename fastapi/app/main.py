@@ -231,15 +231,15 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
 
 @app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data","Static Data"])
 async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool=False,db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id,'vehicle_id',geojson,agency_id.value)
+    result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id,geojson,agency_id.value)
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
     
-@app.get("/{agency_id}/trip_detail/{route_code}",tags=["Real-Time data","Static Data"])
-async def get_trip_detail(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,route_code,'route_code',geojson,agency_id.value)
-    # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
-    return result
+# @app.get("/{agency_id}/trip_detail/{route_code}",tags=["Real-Time data","Static Data"])
+# async def get_trip_detail(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
+#     result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,route_code,geojson,agency_id.value)
+#     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
+#     return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):

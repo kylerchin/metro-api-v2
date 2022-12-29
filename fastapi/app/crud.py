@@ -179,8 +179,9 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
             new_row.trip_assigned = True
         new_row.upcoming_stop_time_update = upcoming_stop_time_reformat(upcoming_stop_time_update_query)
         route_code_query = db.query(models.StopTimes.route_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
+        destination_code_query = db.query(models.StopTimes.destination_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
         new_row.route_code = route_code_query['route_code']
-        new_row.destination_code = route_code_query['destination_code']
+        new_row.destination_code = destination_code_query['destination_code']
         result.append(new_row)
     return result
 
