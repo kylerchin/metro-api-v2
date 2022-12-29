@@ -123,8 +123,8 @@ def vehicle_position_reformat_for_trip_details(row,geojson=False):
         properties = {}
         row.current_status = get_readable_status(row.current_status)
         row.trip_assigned = False
-        if row.trip_id:
-            row.trip_assigned = True
+        # if row.trip_id:
+        #     row.trip_assigned = True
         if row.trip_route_id:
             del row.trip_route_id 
         if row.vehicle_id:
