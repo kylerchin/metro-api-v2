@@ -183,7 +183,9 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
         new_row.route_code = route_code_query['route_code']
         new_row.destination_code = destination_code_query['destination_code']
         result.append(new_row)
-    return result
+    if result == []:
+        message_object = [{'message': 'No vehicle data for this vehicle id: ' + str(vehicle_id)}]
+        return message_object
 
 def get_gtfs_rt_trips_by_trip_id(db, trip_id: str,agency_id: str):
     the_query = db.query(gtfs_models.TripUpdate).filter(gtfs_models.TripUpdate.trip_id == trip_id,gtfs_models.TripUpdate.agency_id == agency_id).all()
