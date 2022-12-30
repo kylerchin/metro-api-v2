@@ -231,7 +231,17 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
 
 @app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data","Static Data"])
 async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool=False,db: Session = Depends(get_db)):
-    result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id,geojson,agency_id.value)
+    multiple_values = vehicle_id.split(',')
+    if len(multiple_values) > 1:
+        result_array = []
+        for value in multiple_values:
+            temp_result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,value,geojson,agency_id.value)
+            if len(temp_result) == 0:
+                temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
+            result_array.append(temp_result)
+        return result_array
+    else:
+        result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id,geojson,agency_id.value)
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
     
