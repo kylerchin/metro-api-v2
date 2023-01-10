@@ -229,8 +229,11 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
                 return result
             return result
 
-@app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data","Static Data"])
+@app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data"])
 async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool=False,db: Session = Depends(get_db)):
+    if vehicle_id == 'all':
+        result = crud.get_all_gtfs_rt_vehicle_positions_trip_data(db,agency_id.value,geojson)
+        return result
     multiple_values = vehicle_id.split(',')
     if len(multiple_values) > 1:
         result_array = []
@@ -387,7 +390,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.12"}
+#     return {"Metro API Version": "2.1.13"}
 
 # Frontend Routing
 

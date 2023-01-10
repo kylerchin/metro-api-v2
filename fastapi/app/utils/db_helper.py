@@ -162,7 +162,6 @@ def upcoming_stop_time_reformat(stop_time_update):
             update_json = json.loads(sanitized_stop_time_json)
             for row in update_json:
                 new_stop_time_object = {}
-                print(row)
                 if row['stop_sequence'] == stop_time_update.stop_sequence:
                     if row['arrival']:
                         new_stop_time_object['arrival'] = row['arrival']
