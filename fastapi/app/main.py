@@ -275,6 +275,24 @@ async def get_canceled_trip(db: Session = Depends(get_db)):
 
 ### Begin Static data endpoints ### :)
 ### GTFS Static data ###
+# @app.get("/{agency_id}/route_stops/{route}",tags=["Static data"])
+# async def populate_route_stops(agency_id: AgencyIdEnum,route, db: Session = Depends(get_db)):
+#     if agency_id == 'LACMTA':
+#         result = crud.get_gtfs_route_stops_for_buses(db,route)
+#         return result
+#     if agency_id == 'LACMTA_Rail':
+#         result = crud.get_gtfs_route_stops_for_rail(db,route)
+#         return result
+
+@app.get("/{agency_id}/route_stops_grouped/{route_code}",tags=["Static data"])
+async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_route_stops_grouped(db,route_code,agency_id.value)
+    return result
+
+    # result = crud.get_line_stops(db)
+    # line_stops = jsonable_encoder(result)
+    # return JSONResponse(content={"line_stops":line_stops})
+
 @app.get("/calendar_dates",tags=["Static data"])
 async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
     result = crud.get_calendar_dates(db)

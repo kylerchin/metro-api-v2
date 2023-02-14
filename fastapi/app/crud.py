@@ -230,6 +230,29 @@ def get_calendar_list(db,agency_id):
         result.append(row.service_id)
     return result
 
+def get_gtfs_route_stops_for_buses(db,route_code):
+    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == 'LACMTA').all()
+    result = []
+    for row in the_query:
+        new_object = {}
+        new_object['route_id'] = row.route_id
+        new_object['route_code'] = row.route_code
+        new_object['stop_id'] = row.stop_id
+        new_object['coordinates'] = row.coordinates
+        result.append(new_object)
+        # for 
+
+    return the_query
+
+def get_gtfs_route_stops_for_rail(db,route_id):
+    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_id == route_id).all()
+    return the_query
+
+
+def get_gtfs_route_stops_grouped(db,route_id,agency_id):
+    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_id == route_id,models.RouteStops.agency_id == agency_id).all()
+    return the_query
+
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)

@@ -78,6 +78,12 @@ class Routes(BaseModel):
     route_type: int
     agency_id: str
 
+class RouteStopsGrouped(BaseModel):
+    route_id: int
+    route_code: str
+    payload: str
+    agency_id: str
+
 class TripShapes(BaseModel):
     shape_id: str
     geometry: str
