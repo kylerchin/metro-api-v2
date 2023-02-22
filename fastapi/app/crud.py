@@ -2,7 +2,7 @@ import polyline
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
-
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from fastapi import Depends, HTTPException, status
@@ -113,7 +113,6 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str,geojson:bool):
     result = []
     if geojson == True:
         this_json = {}
-        print('in true')
         count = 0
         features = []
         for row in the_query:
@@ -378,6 +377,59 @@ def get_calendar_list(db,agency_id):
         result.append(row.service_id)
     return result
 
+def get_gtfs_route_stops_for_buses(db,route_code):
+    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == 'LACMTA').all()
+    result = []
+    for row in the_query:
+        new_object = {}
+        new_object['route_id'] = row.route_id
+        new_object['route_code'] = row.route_code
+        new_object['stop_id'] = row.stop_id
+        new_object['coordinates'] = row.coordinates
+        result.append(new_object)
+        # for 
+
+    return the_query
+
+def get_gtfs_route_stops(db,route_code,daytype,agency_id):
+    result = []
+    if daytype != 'all':
+        the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == agency_id,models.RouteStops.day_type == daytype).all()
+        for row in the_query:
+            new_object = {}
+            new_object['route_id'] = row.route_id
+            new_object['route_code'] = row.route_code
+            new_object['stop_id'] = row.stop_id
+            new_object['day_type'] = row.day_type
+            new_object['agency_id'] = row.agency_id
+            new_object['geojson'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            new_object['stop_sequence'] = row.stop_sequence
+            new_object['direction_id'] = row.direction_id
+            new_object['stop_name'] = row.stop_name
+            new_object['departure_times'] = row.departure_times
+            result.append(new_object)
+        return result
+    else:
+        the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == agency_id).all()
+        for row in the_query:
+            new_object = {}
+            new_object['route_id'] = row.route_id
+            new_object['route_code'] = row.route_code
+            new_object['stop_id'] = row.stop_id
+            new_object['day_type'] = row.day_type
+            new_object['agency_id'] = row.agency_id
+            new_object['geojson'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            new_object['stop_sequence'] = row.stop_sequence
+            new_object['direction_id'] = row.direction_id
+            new_object['stop_name'] = row.stop_name
+            new_object['departure_times'] = row.departure_times
+            result.append(new_object)
+        return result
+
+
+def get_gtfs_route_stops_grouped(db,route_code,agency_id):
+    the_query = db.query(models.RouteStopsGrouped).filter(models.RouteStopsGrouped.route_code == route_code,models.RouteStopsGrouped.agency_id == agency_id).all()
+    return the_query
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
