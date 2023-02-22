@@ -12,7 +12,7 @@ except Exception as e:
 class Config:
     BASE_URL = "https://api.metro.net"
     REDIS_URL = "redis://redis:6379"
-    TARGET_DB_SCHEMA = "metro_api_dev"
+    TARGET_DB_SCHEMA = "metro_api"
     DB_URI = os.environ.get('URI')
     SECRET_KEY = os.environ.get('HASH_KEY')
     ALGORITHM = os.environ.get('HASHING_ALGORITHM')
