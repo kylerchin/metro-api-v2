@@ -80,19 +80,19 @@ class Routes(Base):
     agency_id = Column(String)
 
 # route stops: route_id,stop_id,day_type,stop_sequence,direction_id,stop_name,coordinates,departure_times
-# class RouteStops(Base):
-#     __tablename__ = "route_stops"
-#     route_id = Column(String, primary_key=True, index=True)
-#     route_code = Column(String)
-#     day_type = Column(String)
-#     stop_id = Column(Integer, primary_key=True, index=True)
-#     stop_sequence = Column(Integer)
-#     direction_id = Column(Integer)
-#     stop_name = Column(String)
-#     coordinates = Column(JSON)
-#     geometry = Column(Geometry('POINT', srid=4326))
-#     departure_times = Column(String)
-#     agency_id = Column(String)
+class RouteStops(Base):
+    __tablename__ = "route_stops"
+    route_id = Column(String, primary_key=True)
+    route_code = Column(String, index=True)
+    day_type = Column(String)
+    stop_id = Column(Integer, primary_key=True)
+    stop_sequence = Column(Integer)
+    direction_id = Column(Integer)
+    stop_name = Column(String)
+    geojson = Column(String)
+    geometry = Column(Geometry('POINT', srid=4326))
+    departure_times = Column(String)
+    agency_id = Column(String)
 
 class RouteStopsGrouped(Base):
     __tablename__ = "route_stops_grouped"

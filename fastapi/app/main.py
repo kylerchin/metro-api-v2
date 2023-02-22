@@ -98,6 +98,11 @@ class VehiclePositionsFieldsEnum(str, Enum):
     vehicle_id = "vehicle_id"
     trip_route_id = "trip_route_id"
     stop_id = "stop_id"
+class DayTypesEnum(str, Enum):
+    weekday = "weekday"
+    saturday = "saturday"
+    sunday = "sunday"
+    all = "all"
 
 tags_metadata = [
     {"name": "Real-Time data", "description": "Includes GTFS-RT data for Metro Rail and Metro Bus."},
@@ -296,16 +301,11 @@ async def get_canceled_trip(db: Session = Depends(get_db)):
 
 
 
-### Begin Static data endpoints ### :)
 ### GTFS Static data ###
-# @app.get("/{agency_id}/route_stops/{route}",tags=["Static data"])
-# async def populate_route_stops(agency_id: AgencyIdEnum,route, db: Session = Depends(get_db)):
-#     if agency_id == 'LACMTA':
-#         result = crud.get_gtfs_route_stops_for_buses(db,route)
-#         return result
-#     if agency_id == 'LACMTA_Rail':
-#         result = crud.get_gtfs_route_stops_for_rail(db,route)
-#         return result
+@app.get("/{agency_id}/route_stops/{route_code}",tags=["Static data"])
+async def populate_route_stops(agency_id: AgencyIdEnum,route_code:str, daytype: DayTypesEnum = DayTypesEnum.all, db: Session = Depends(get_db)):
+    result = crud.get_gtfs_route_stops(db,route_code,daytype.value,agency_id.value)
+    return result
 
 @app.get("/{agency_id}/route_stops_grouped/{route_code}",tags=["Static data"])
 async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code:str, db: Session = Depends(get_db)):
@@ -410,7 +410,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.13"}
+#     return {"Metro API Version": "2.1.17"}
 
 # Frontend Routing
 
