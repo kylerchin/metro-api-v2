@@ -2,7 +2,7 @@ import polyline
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
-
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from fastapi import Depends, HTTPException, status
@@ -249,10 +249,11 @@ def get_gtfs_route_stops_for_rail(db,route_id):
     return the_query
 
 
-def get_gtfs_route_stops_grouped(db,route_id,agency_id):
-    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_id == route_id,models.RouteStops.agency_id == agency_id).all()
+def get_gtfs_route_stops_grouped(db,route_code,agency_id):
+    the_query = db.query(models.RouteStopsGrouped).filter(models.RouteStopsGrouped.route_code == route_code,models.RouteStopsGrouped.agency_id == agency_id).all()
+    for value in the_query:
+        print(str(value))
     return the_query
-
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)

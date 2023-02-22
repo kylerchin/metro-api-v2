@@ -285,10 +285,12 @@ async def get_canceled_trip(db: Session = Depends(get_db)):
 #         return result
 
 @app.get("/{agency_id}/route_stops_grouped/{route_code}",tags=["Static data"])
-async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
+async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code:str, db: Session = Depends(get_db)):
     result = crud.get_gtfs_route_stops_grouped(db,route_code,agency_id.value)
+    # json_compatible_item_data = jsonable_encoder(result)
+    # return str(JSONResponse(content=json_compatible_item_data)).replace('"','')
+    # final_result = str(result).removeprefix('[').removesuffix(']')
     return result
-
     # result = crud.get_line_stops(db)
     # line_stops = jsonable_encoder(result)
     # return JSONResponse(content={"line_stops":line_stops})
