@@ -305,18 +305,15 @@ async def get_canceled_trip(db: Session = Depends(get_db)):
 @app.get("/{agency_id}/route_stops/{route_code}",tags=["Static data"])
 async def populate_route_stops(agency_id: AgencyIdEnum,route_code:str, daytype: DayTypesEnum = DayTypesEnum.all, db: Session = Depends(get_db)):
     result = crud.get_gtfs_route_stops(db,route_code,daytype.value,agency_id.value)
-    return result
+    json_compatible_item_data = jsonable_encoder(result[0])
+    return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/{agency_id}/route_stops_grouped/{route_code}",tags=["Static data"])
 async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code:str, db: Session = Depends(get_db)):
     result = crud.get_gtfs_route_stops_grouped(db,route_code,agency_id.value)
-    # json_compatible_item_data = jsonable_encoder(result)
-    # return str(JSONResponse(content=json_compatible_item_data)).replace('"','')
-    # final_result = str(result).removeprefix('[').removesuffix(']')
-    return result
-    # result = crud.get_line_stops(db)
-    # line_stops = jsonable_encoder(result)
-    # return JSONResponse(content={"line_stops":line_stops})
+    json_compatible_item_data = jsonable_encoder(result[0])
+    return JSONResponse(content=json_compatible_item_data)
+
 
 @app.get("/calendar_dates",tags=["Static data"])
 async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
