@@ -427,7 +427,7 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['latitude'] = row.latitude
             new_object['longitude'] = row.longitude
             new_object['departure_times'] = row.departure_times
-            result.append(['nothing'])
+            result.append(new_object)
         return result
 
 
