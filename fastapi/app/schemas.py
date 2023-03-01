@@ -89,6 +89,8 @@ class RouteStops(BaseModel):
     geojson: Json
     agency_id: str
     departure_times: str
+    latitude: float
+    longitude: float
     geometry: str
 
 class RouteStopsGrouped(BaseModel):

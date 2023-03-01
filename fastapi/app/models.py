@@ -85,13 +85,15 @@ class RouteStops(Base):
     route_id = Column(String, primary_key=True)
     route_code = Column(String, index=True)
     day_type = Column(String)
-    stop_id = Column(Integer, primary_key=True)
-    stop_sequence = Column(Integer)
-    direction_id = Column(Integer)
+    stop_id = Column(Integer)
+    stop_sequence = Column(Integer, primary_key=True)
+    direction_id = Column(Integer, primary_key=True)
     stop_name = Column(String)
     geojson = Column(String)
     geometry = Column(Geometry('POINT', srid=4326))
     departure_times = Column(String)
+    latitude = Column(Float)
+    longitude = Column(Float)
     agency_id = Column(String)
 
 class RouteStopsGrouped(Base):
