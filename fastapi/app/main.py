@@ -305,7 +305,7 @@ async def get_canceled_trip(db: Session = Depends(get_db)):
 @app.get("/{agency_id}/route_stops/{route_code}",tags=["Static data"])
 async def populate_route_stops(agency_id: AgencyIdEnum,route_code:str, daytype: DayTypesEnum = DayTypesEnum.all, db: Session = Depends(get_db)):
     result = crud.get_gtfs_route_stops(db,route_code,daytype.value,agency_id.value)
-    json_compatible_item_data = jsonable_encoder(result[0])
+    json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
 @app.get("/{agency_id}/route_stops_grouped/{route_code}",tags=["Static data"])
@@ -407,7 +407,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.17"}
+#     return {"Metro API Version": "2.1.15"}
 
 # Frontend Routing
 

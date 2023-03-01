@@ -406,6 +406,8 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_sequence'] = row.stop_sequence
             new_object['direction_id'] = row.direction_id
             new_object['stop_name'] = row.stop_name
+            new_object['latitude'] = row.latitude
+            new_object['longitude'] = row.longitude
             new_object['departure_times'] = row.departure_times
             result.append(new_object)
         return result
@@ -422,8 +424,10 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_sequence'] = row.stop_sequence
             new_object['direction_id'] = row.direction_id
             new_object['stop_name'] = row.stop_name
+            new_object['latitude'] = row.latitude
+            new_object['longitude'] = row.longitude
             new_object['departure_times'] = row.departure_times
-            result.append(new_object)
+            result.append(['nothing'])
         return result
 
 
