@@ -84,7 +84,7 @@ class RouteStops(Base):
     __tablename__ = "route_stops"
     route_id = Column(String, primary_key=True)
     route_code = Column(String, index=True)
-    day_type = Column(String)
+    day_type = Column(String,primary_key=True)
     stop_id = Column(Integer)
     stop_sequence = Column(Integer, primary_key=True)
     direction_id = Column(Integer, primary_key=True)
