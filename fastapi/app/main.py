@@ -102,6 +102,7 @@ class DayTypesEnum(str, Enum):
     weekday = "weekday"
     saturday = "saturday"
     sunday = "sunday"
+    no_type = "no_type"
     all = "all"
 
 tags_metadata = [
