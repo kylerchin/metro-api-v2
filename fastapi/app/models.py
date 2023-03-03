@@ -79,6 +79,25 @@ class Routes(Base):
     route_url = Column(String)
     agency_id = Column(String)
 
+class Schedules(Base):
+    __tablename__ = "schedules"
+    route_id = Column(Integer, primary_key=True, index=True)
+    route_code = Column(String)
+    route_short_name = Column(String)
+    route_long_name = Column(String)
+    route_desc = Column(String)
+    route_type = Column(Integer)
+    route_color = Column(String)
+    route_text_color = Column(String)
+    route_url = Column(String)
+    agency_id = Column(String)
+    line_id = Column(String)
+    alt_id = Column(String)
+    long_name = Column(String)
+    description = Column(String)
+    pdf_file_url = Column(String)
+    pdf_file_link = Column(String)
+
 # route stops: route_id,stop_id,day_type,stop_sequence,direction_id,stop_name,coordinates,departure_times
 class RouteStops(Base):
     __tablename__ = "route_stops"
