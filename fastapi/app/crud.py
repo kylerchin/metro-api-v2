@@ -1,4 +1,5 @@
 import polyline
+import ast 
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
@@ -409,7 +410,7 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_name'] = row.stop_name
             new_object['latitude'] = row.latitude
             new_object['longitude'] = row.longitude
-            new_object['departure_times'] = row.departure_times
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
             result.append(new_object)
         return result
     else:
@@ -427,7 +428,7 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_name'] = row.stop_name
             new_object['latitude'] = row.latitude
             new_object['longitude'] = row.longitude
-            new_object['departure_times'] = row.departure_times
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
             result.append(new_object)
         return result
 
