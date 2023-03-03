@@ -2,7 +2,6 @@ fastapi
 pydantic
 starlette
 typing-extensions
-# uvicorn
 uvicorn[standard]
 gunicorn
 requests
@@ -13,17 +12,16 @@ SQLAlchemy
 psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
-# GeoAlchemy2
-logzio-python-handler
 aiofiles
+logzio-python-handler
+GeoAlchemy2==0.10.2
 jinja2
 fastapi-restful[tasks]
-numpy
 pandas
+protobuf==3.19.6
 google
-protobuf==3.19.*
-GeoAlchemy2
 shapely
+polyline
 # redis_om
 # fastapi-redis-cache
 # fastapi-cache2[redis]

@@ -13,7 +13,7 @@ psycopg2
 python-jose[cryptography]
 passlib[bcrypt]
 aiofiles
-GeoAlchemy2==0.10.2
+GeoAlchemy2
 jinja2
 fastapi-restful[tasks]
 pandas

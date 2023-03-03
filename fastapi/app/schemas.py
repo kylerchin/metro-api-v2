@@ -78,6 +78,26 @@ class Routes(BaseModel):
     route_type: int
     agency_id: str
 
+class RouteStops(BaseModel):
+    route_code: str
+    route_id: str
+    stop_id: int
+    day_type: str
+    stop_sequence: int
+    direction_id: int
+    stop_name: str
+    geojson: Json
+    agency_id: str
+    departure_times: str
+    latitude: float
+    longitude: float
+    geometry: str
+
+class RouteStopsGrouped(BaseModel):
+    route_code: str
+    payload: Json
+    agency_id: str
+
 class TripShapes(BaseModel):
     shape_id: str
     geometry: str

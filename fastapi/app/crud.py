@@ -1,10 +1,12 @@
 import polyline
+import ast 
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
-
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from sqlalchemy.sql import text
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
@@ -113,7 +115,6 @@ def get_all_gtfs_rt_vehicle_positions(db, agency_id: str,geojson:bool):
     result = []
     if geojson == True:
         this_json = {}
-        print('in true')
         count = 0
         features = []
         for row in the_query:
@@ -212,15 +213,15 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
             return message_object
         new_row = vehicle_position_reformat_for_trip_details(row,geojson)
         stop_name_query = db.query(models.Stops.stop_name).filter(models.Stops.stop_id == new_row.stop_id,models.Stops.agency_id == agency_id).first()
-        new_row.stop_name = stop_name_query['stop_name']
+        new_row.stop_name = stop_name_query[0]
         upcoming_stop_time_update_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == new_row.trip_id,gtfs_models.StopTimeUpdate.stop_sequence == new_row.current_stop_sequence).first()
         if upcoming_stop_time_update_query is not None:
             new_row.trip_assigned = True
         new_row.upcoming_stop_time_update = upcoming_stop_time_reformat(upcoming_stop_time_update_query)
         route_code_query = db.query(models.StopTimes.route_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
         destination_code_query = db.query(models.StopTimes.destination_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
-        new_row.route_code = route_code_query['route_code']
-        new_row.destination_code = destination_code_query['destination_code']
+        new_row.route_code = route_code_query[0]
+        new_row.destination_code = destination_code_query[0]
         result.append(new_row)
     if result == []:
         message_object = [{'message': 'No vehicle data for this vehicle id: ' + str(vehicle_id)}]
@@ -371,6 +372,28 @@ def get_routes_by_route_id(db,route_id,agency_id):
         the_query = db.query(models.Routes).filter(models.Routes.route_id == route_id,models.Routes.agency_id == agency_id).all()
         return the_query
 
+
+def get_schedules_by_route_code(db,route_code,agency_id):
+    if route_code == 'list':
+        the_query = db.query(models.Schedules).filter(models.Schedules.agency_id == agency_id).distinct(models.Schedules.route_code).all()
+        result = []
+        for row in the_query:
+            result.append(row.route_code)
+        return result
+    elif route_code == 'all':
+        the_query = db.query(models.Schedules).all()
+        agency_schedule_data = {}
+        for row in the_query:
+            if row.agency_id in agency_schedule_data:
+                agency_schedule_data[row.agency_id].append(row)
+            else:
+                agency_schedule_data[row.agency_id] = [row]
+        return agency_schedule_data
+    else:
+        the_query = db.query(models.Schedules).filter(models.Schedules.route_code == route_code,models.Schedules.agency_id == agency_id).all()
+        return the_query
+
+
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
     result = []
@@ -378,6 +401,63 @@ def get_calendar_list(db,agency_id):
         result.append(row.service_id)
     return result
 
+def get_gtfs_route_stops_for_buses(db,route_code):
+    the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == 'LACMTA').all()
+    result = []
+    for row in the_query:
+        new_object = {}
+        new_object['route_id'] = row.route_id
+        new_object['route_code'] = row.route_code
+        new_object['stop_id'] = row.stop_id
+        new_object['coordinates'] = row.coordinates
+        result.append(new_object)
+        # for 
+
+    return the_query
+
+def get_gtfs_route_stops(db,route_code,daytype,agency_id):
+    result = []
+    if daytype != 'all':
+        the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == agency_id,models.RouteStops.day_type == daytype).all()
+        for row in the_query:
+            new_object = {}
+            new_object['route_id'] = row.route_id
+            new_object['route_code'] = row.route_code
+            new_object['stop_id'] = row.stop_id
+            new_object['day_type'] = row.day_type
+            new_object['agency_id'] = row.agency_id
+            new_object['geojson'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            new_object['stop_sequence'] = row.stop_sequence
+            new_object['direction_id'] = row.direction_id
+            new_object['stop_name'] = row.stop_name
+            new_object['latitude'] = row.latitude
+            new_object['longitude'] = row.longitude
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
+            result.append(new_object)
+        return result
+    else:
+        the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == agency_id).all()
+        for row in the_query:
+            new_object = {}
+            new_object['route_id'] = row.route_id
+            new_object['route_code'] = row.route_code
+            new_object['stop_id'] = row.stop_id
+            new_object['day_type'] = row.day_type
+            new_object['agency_id'] = row.agency_id
+            new_object['geojson'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            new_object['stop_sequence'] = row.stop_sequence
+            new_object['direction_id'] = row.direction_id
+            new_object['stop_name'] = row.stop_name
+            new_object['latitude'] = row.latitude
+            new_object['longitude'] = row.longitude
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
+            result.append(new_object)
+        return result
+
+
+def get_gtfs_route_stops_grouped(db,route_code,agency_id):
+    the_query = db.query(models.RouteStopsGrouped).filter(models.RouteStopsGrouped.route_code == route_code,models.RouteStopsGrouped.agency_id == agency_id).all()
+    return the_query
 # generic function to get the gtfs static data
 def get_gtfs_static_data(db, tablename,column_name,query,agency_id):
     aliased_table = aliased(tablename)
@@ -412,12 +492,16 @@ def get_canceled_trips(db, trp_route: str):
 ## go pass data
 def get_gopass_schools_combined_phone(db,groupby_column='id'):
     # the_query = db.query(models.GoPassSchools).filter(models.GoPassSchools.school != None).all()
-    the_query = db.execute("SELECT "+groupby_column+", string_agg(distinct(phone), ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1;")    
-    temp_dictionary, temp_array = {}, []
-    for rowproxy in the_query:
-        # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
-        temp_array.append(rowproxy)
-    return temp_array
+    the_query = db.execute(text("SELECT "+groupby_column+", string_agg(distinct(phone), ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1 order by "+groupby_column+" asc;"))  
+    # temp_dictionary, temp_array = {}, []
+    temp_array = []
+    # for rowproxy in the_query:
+    #     # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
+    #     # temp_array.append(rowproxy)
+    #     return rowproxy
+    results_as_dict = the_query.mappings().all()
+    # result = [{'phone':row[0],'school':row[1]} for row in the_query]
+    return results_as_dict
 
 def get_gopass_schools(db, show_missing: bool):
     if show_missing == True:
