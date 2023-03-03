@@ -372,6 +372,28 @@ def get_routes_by_route_id(db,route_id,agency_id):
         the_query = db.query(models.Routes).filter(models.Routes.route_id == route_id,models.Routes.agency_id == agency_id).all()
         return the_query
 
+
+def get_schedules_by_route_code(db,route_code,agency_id):
+    if route_code == 'list':
+        the_query = db.query(models.Schedules).filter(models.Schedules.agency_id == agency_id).distinct(models.Schedules.route_code).all()
+        result = []
+        for row in the_query:
+            result.append(row.route_code)
+        return result
+    elif route_code == 'all':
+        the_query = db.query(models.Schedules).all()
+        agency_schedule_data = {}
+        for row in the_query:
+            if row.agency_id in agency_schedule_data:
+                agency_schedule_data[row.agency_id].append(row)
+            else:
+                agency_schedule_data[row.agency_id] = [row]
+        return agency_schedule_data
+    else:
+        the_query = db.query(models.Schedules).filter(models.Schedules.route_code == route_code,models.Schedules.agency_id == agency_id).all()
+        return the_query
+
+
 def get_calendar_list(db,agency_id):
     the_query = db.query(models.Calendar).filter(models.Calendar.agency_id == agency_id).all()
     result = []

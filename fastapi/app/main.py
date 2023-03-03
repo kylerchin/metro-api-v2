@@ -315,7 +315,6 @@ async def populate_route_stops_grouped(agency_id: AgencyIdEnum,route_code:str, d
     json_compatible_item_data = jsonable_encoder(result[0])
     return JSONResponse(content=json_compatible_item_data)
 
-
 @app.get("/calendar_dates",tags=["Static data"])
 async def get_calendar_dates_from_db(db: Session = Depends(get_db)):
     result = crud.get_calendar_dates(db)
@@ -374,10 +373,14 @@ async def get_calendar(agency_id: AgencyIdEnum,service_id, db: Session = Depends
     result = crud.get_calendar_data_by_id(db,models.Calendar,service_id,agency_id.value)
     return result
 
-
 @app.get("/{agency_id}/routes/{route_id}",tags=["Static data"])
 async def get_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get_db)):
     result = crud.get_routes_by_route_id(db,route_id,agency_id.value)
+    return result
+
+@app.get("/{agency_id}/schedules/{route_code}/",tags=["Static data"])
+async def get_routes(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
+    result = crud.get_schedules_by_route_code(db,route_code,agency_id.value)
     return result
 
 @app.get("/{agency_id}/agency/",tags=["Static data"])
@@ -408,7 +411,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.16.1"}
+#     return {"Metro API Version": "2.1.17"}
 
 # Frontend Routing
 
