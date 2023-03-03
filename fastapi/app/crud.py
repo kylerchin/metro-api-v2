@@ -1,10 +1,12 @@
 import polyline
+import ast 
 from turtle import position
 from typing import Optional
 from datetime import datetime,timedelta
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from sqlalchemy.sql import text
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
@@ -408,7 +410,7 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_name'] = row.stop_name
             new_object['latitude'] = row.latitude
             new_object['longitude'] = row.longitude
-            new_object['departure_times'] = row.departure_times
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
             result.append(new_object)
         return result
     else:
@@ -426,7 +428,7 @@ def get_gtfs_route_stops(db,route_code,daytype,agency_id):
             new_object['stop_name'] = row.stop_name
             new_object['latitude'] = row.latitude
             new_object['longitude'] = row.longitude
-            new_object['departure_times'] = row.departure_times
+            new_object['departure_times'] = ast.literal_eval(row.departure_times)
             result.append(new_object)
         return result
 
@@ -468,12 +470,16 @@ def get_canceled_trips(db, trp_route: str):
 ## go pass data
 def get_gopass_schools_combined_phone(db,groupby_column='id'):
     # the_query = db.query(models.GoPassSchools).filter(models.GoPassSchools.school != None).all()
-    the_query = db.execute("SELECT "+groupby_column+", string_agg(distinct(phone), ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1;")    
-    temp_dictionary, temp_array = {}, []
-    for rowproxy in the_query:
-        # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
-        temp_array.append(rowproxy)
-    return temp_array
+    the_query = db.execute(text("SELECT "+groupby_column+", string_agg(distinct(phone), ' | ') AS phone_list FROM go_pass_schools GROUP  BY 1 order by "+groupby_column+" asc;"))  
+    # temp_dictionary, temp_array = {}, []
+    temp_array = []
+    # for rowproxy in the_query:
+    #     # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
+    #     # temp_array.append(rowproxy)
+    #     return rowproxy
+    results_as_dict = the_query.mappings().all()
+    # result = [{'phone':row[0],'school':row[1]} for row in the_query]
+    return results_as_dict
 
 def get_gopass_schools(db, show_missing: bool):
     if show_missing == True:
