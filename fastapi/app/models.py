@@ -79,8 +79,8 @@ class Routes(Base):
     route_url = Column(String)
     agency_id = Column(String)
 
-class Schedules(Base):
-    __tablename__ = "schedules"
+class RouteOverview(Base):
+    __tablename__ = "route_overview"
     route_id = Column(Integer, primary_key=True, index=True)
     route_code = Column(String)
     route_short_name = Column(String)
