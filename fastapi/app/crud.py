@@ -388,15 +388,18 @@ def get_route_overview_by_route_code(db,route_code,agency_id):
         result = []
         for row in the_query:
             result.append(row.route_code)
-        return result
-    else:
+        return result    
+    elif route_code != 'all':
         the_query = db.query(models.RouteOverview).filter(models.RouteOverview.route_code == route_code,models.RouteOverview.agency_id == agency_id).all()
         if the_query:
             return the_query
         else:
-            print("No data found for route_code: %s, agency_id: %s" % (route_code,agency_id))
-            return None
-        
+            error_message = {'error': 'No route found for route code: ' + route_code}
+            return error_message
+    else:
+        the_query = db.query(models.RouteOverview).filter(models.RouteOverview.agency_id == agency_id).all()
+        return the_query      
+      
 def get_gtfs_route_stops_for_buses(db,route_code):
     the_query = db.query(models.RouteStops).filter(models.RouteStops.route_code == route_code,models.RouteStops.agency_id == 'LACMTA').all()
     result = []
