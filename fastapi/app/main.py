@@ -85,6 +85,11 @@ PATH_TO_CANCELED_JSON = os.path.realpath(TARGET_PATH_CANCELED_JSON)
 class AgencyIdEnum(str, Enum):
     LACMTA = "LACMTA"
     LACMTA_Rail = "LACMTA_Rail"
+
+class AllAgencyIdEnum(str, Enum):
+    LACMTA = "LACMTA"
+    LACMTA_Rail = "LACMTA_Rail"
+    all = "all"
 class GoPassGroupEnum(str, Enum):
     ID = "id"
     SCHOOL = "school"
@@ -378,9 +383,9 @@ async def get_routes(agency_id: AgencyIdEnum,route_id, db: Session = Depends(get
     result = crud.get_routes_by_route_id(db,route_id,agency_id.value)
     return result
 
-@app.get("/{agency_id}/schedules/{route_code}/",tags=["Static data"])
-async def get_routes(agency_id: AgencyIdEnum,route_code, db: Session = Depends(get_db)):
-    result = crud.get_schedules_by_route_code(db,route_code,agency_id.value)
+@app.get("/{agency_id}/route_overview",tags=["Static data"])
+async def get_routes(agency_id: AllAgencyIdEnum,route_code:str="", db: Session = Depends(get_db)):
+    result = crud.get_route_overview_by_route_code(db,route_code,agency_id.value)
     return result
 
 @app.get("/{agency_id}/agency/",tags=["Static data"])
@@ -411,7 +416,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.17"}
+#     return {"Metro API Version": "2.1.18"}
 
 # Frontend Routing
 
