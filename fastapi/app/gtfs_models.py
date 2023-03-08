@@ -19,7 +19,7 @@ class TripUpdate(GTFSrtBase):
     __tablename__ = 'trip_updates'
     # This replaces the TripDescriptor message
     # TODO: figure out the relations
-    trip_id = Column(String(64),primary_key=True)
+    trip_id = Column(String(64),primary_key=True,index=True)
     route_id = Column(String(64))
     start_time = Column(String(8))
     start_date = Column(String(10))
@@ -50,7 +50,7 @@ class StopTimeUpdate(GTFSrtBase):
 
     # TODO: Fill one from the other
     stop_sequence = Column(Integer)
-    stop_id = Column(String(10),primary_key=True)
+    stop_id = Column(String(10),primary_key=True,index=True)
     trip_id = Column(String, ForeignKey('trip_updates.trip_id'))
     arrival = Column(Integer)
     departure = Column(Integer)
@@ -83,7 +83,7 @@ class VehiclePosition(GTFSrtBase):
     geometry = Column(Geometry('POINT', srid=4326))
 
     # collapsed Vehicle.Vehicle
-    vehicle_id = Column(String,primary_key=True)
+    vehicle_id = Column(String,primary_key=True,index=True)
     vehicle_label = Column(String)
 
     agency_id = Column(String)
