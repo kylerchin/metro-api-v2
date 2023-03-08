@@ -38,18 +38,18 @@ class StopTimes(Base):
     __tablename__ = "stop_times"
     arrival_time = Column(String)
     departure_time = Column(String)
-    stop_id = Column(Integer)
-    stop_sequence = Column(Integer,primary_key=True)
+    stop_id = Column(Integer, index=True)
+    stop_sequence = Column(Integer,primary_key=True, index=True)
     stop_headsign = Column(String)
     pickup_type = Column(Integer)
     drop_off_type = Column(Integer)
-    trip_id_event = Column(String)
+    trip_id_event = Column(String,index=True)
     route_code = Column(Integer)
-    destination_code = Column(String)
+    destination_code = Column(String,index=True)
     timepoint = Column(Integer)
     bay_num = Column(Integer)
     agency_id = Column(String)
-    trip_id = Column(Integer, primary_key=True)
+    trip_id = Column(Integer, primary_key=True,index=True)
 
 class Stops(Base):
     __tablename__ = "stops"
@@ -142,9 +142,9 @@ class Trips(Base):
     __tablename__ = "trips"
     route_id = Column(Integer, primary_key=True, index=True)
     service_id = Column(String)
-    trip_id = Column(String)
+    trip_id = Column(String, index=True)
     trip_headsign = Column(String)
-    direction_id = Column(Integer)
+    direction_id = Column(Integer, index=True)
     block_id = Column(Integer)
     shape_id = Column(String)
     trip_id_event = Column(String)
