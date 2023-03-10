@@ -7,7 +7,7 @@ def set_db_schema():
         if current_environment == 'prod':
             return 'metro_api'
         else:
-            return 'metro_api'
+            return 'metro_api_dev'
     except Exception as e:
         print('Error setting db schema: ' + str(e))
         
