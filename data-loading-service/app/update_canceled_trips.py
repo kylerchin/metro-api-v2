@@ -35,4 +35,4 @@ def load_canceled_service_into_db(path_to_json_file):
     canceled_data_frame['trp_route'] = canceled_data_frame['trp_route'].str.replace(' ','')
     canceled_data_frame['dty_number'] = canceled_data_frame['dty_number'].str.replace(' ','')
     canceled_data_frame['LastUpdateDate'] = canceled_data_frame['LastUpdateDate'].str.split(';').str[0].str.replace('_',' ')
-    canceled_data_frame.to_sql('canceled_service',engine,index=False,if_exists="replace",schema=Config.TARGET_DB_SCHEMA)
+    canceled_data_frame.to_sql('canceled_service',engine,index=False,if_exists="append",schema=Config.TARGET_DB_SCHEMA)
