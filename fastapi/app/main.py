@@ -121,8 +121,8 @@ tags_metadata = [
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(openapi_tags=tags_metadata,docs_url="/",version="2.1.19", servers=[
-        {"url": "https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com", "description": "Staging environment"},
         {"url": "https://api.metro.net", "description": "Production environment"},
+        {"url": "https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com", "description": "Staging environment"},
     ],root_path='/'
 )
 
@@ -160,8 +160,6 @@ response = requests.get(lacmta_gtfs_rt_url)
 
 cr = csv.reader(response.text.splitlines())
 # csv_to_json(cr,jsonFilePath)
-
-app = FastAPI()
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
