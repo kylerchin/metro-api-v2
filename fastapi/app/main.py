@@ -161,8 +161,6 @@ response = requests.get(lacmta_gtfs_rt_url)
 cr = csv.reader(response.text.splitlines())
 # csv_to_json(cr,jsonFilePath)
 
-app = FastAPI()
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
