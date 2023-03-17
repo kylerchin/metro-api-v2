@@ -92,7 +92,7 @@ jobs:
         with:
           node-version: 18
           cache: yarn
-          cache-dependency-path: documentation/package-lock.json
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install dependencies
         if: steps.changed-documentation.outputs.any_changed == 'true'
