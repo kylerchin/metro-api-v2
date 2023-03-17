@@ -99,12 +99,6 @@ jobs:
         uses: tj-actions/changed-files@v35
         with:
           files: documentation
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-          cache-dependency-path: '**/package-lock.json'
-
       - name: Install dependencies
         if: steps.changed-documentation.outputs.any_changed == 'true'
         run: >
