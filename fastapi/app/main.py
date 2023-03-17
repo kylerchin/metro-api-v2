@@ -120,7 +120,12 @@ tags_metadata = [
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(openapi_tags=tags_metadata,docs_url="/")
+app = FastAPI(openapi_tags=tags_metadata,docs_url="/",version="2.1.19", servers=[
+        {"url": "https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com", "description": "Staging environment"},
+        {"url": "https://api.metro.net", "description": "Production environment"},
+    ],root_path='/'
+)
+
 # db = connect(host='', port=0, timeout=None, source_address=None)
 
 templates = Jinja2Templates(directory="app/frontend")
