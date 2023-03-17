@@ -116,7 +116,7 @@ def convert_rail_route_code_to_letter(route_code):
 def get_route_code_from_trip_route_id(trip_id,agency_id):
     val = ""
     if agency_id == 'LACMTA_Rail' and trip_id.startswith('8'):
-        val = convert_rail_route_code_to_letter(trip_id)
+        val = trip_id
     else:
         val = str(trip_id).split('-')[0]
     return val
