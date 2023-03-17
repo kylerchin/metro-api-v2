@@ -126,8 +126,9 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(openapi_tags=tags_metadata,docs_url="/")
 # db = connect(host='', port=0, timeout=None, source_address=None)
 
-templates = Jinja2Templates(directory="app/frontend")
-app.mount("/", StaticFiles(directory="app/frontend"))
+templates = Jinja2Templates(directory="app/documentation")
+# app.mount("/", StaticFiles(directory="app/documentation", html=True))
+# app.mount("/", StaticFiles(directory="app/frontend"))
 
 # code from https://fastapi-restful.netlify.app/user-guide/repeated-tasks/
 
@@ -424,16 +425,26 @@ async def get_time():
 
 # Frontend Routing
 
-@app.get("/",response_class=HTMLResponse)
-def index(request:Request):
-    human_readable_default_update = None
-    try:
-        default_update = datetime.fromtimestamp(Config.API_LAST_UPDATE_TIME)
-        default_update = default_update.astimezone(pytz.timezone("America/Los_Angeles"))
-        human_readable_default_update = default_update.strftime('%Y-%m-%d %H:%M')
-    except Exception as e:
-        logger.exception(type(e).__name__ + ": " + str(e), exc_info=False)
-    return templates.TemplateResponse("index.html", context= {"request": request,"api_version":Config.CURRENT_VERSION,"update_time":human_readable_default_update})
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            response = await super().get_response('.', scope)
+        return response
+
+app.mount('/', SPAStaticFiles(directory='app/documentation', html=True), name='frontend')
+
+# @app.get("/",response_class=HTMLResponse)
+# def index(request:Request):
+#     return templates.TemplateResponse("index.html",context={"request":request})
+    # human_readable_default_update = None
+    # try:
+    #     default_update = datetime.fromtimestamp(Config.API_LAST_UPDATE_TIME)
+    #     default_update = default_update.astimezone(pytz.timezone("America/Los_Angeles"))
+    #     human_readable_default_update = default_update.strftime('%Y-%m-%d %H:%M')
+    # except Exception as e:
+    #     logger.exception(type(e).__name__ + ": " + str(e), exc_info=False)
+    # return templates.TemplateResponse("index.html", context= {"request": request,"api_version":Config.CURRENT_VERSION,"update_time":human_readable_default_update})
 
 class LogFilter(logging.Filter):
     def filter(self, record):
@@ -476,7 +487,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @functools.lru_cache()
 def read_openapi_yaml() -> Response:
     openapi_json= app.openapi()
-    openapi_json['servers'] = [{"url": "https://api.metro.net"}]
+    openapi_json['servers'] = [{"url": "https://api.metro.net","description": "Production Server"},{"url": "https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com/","description": "Development Server"}]
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s)
     return Response(yaml_s.getvalue(), media_type='text/yaml')
