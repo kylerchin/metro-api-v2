@@ -23,6 +23,9 @@ from sqlalchemy import false
 from sqlalchemy.orm import aliased
 
 from pydantic import BaseModel, Json, ValidationError
+import functools
+import io
+import yaml
 
 from starlette.middleware.cors import CORSMiddleware
 
@@ -120,12 +123,7 @@ tags_metadata = [
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(openapi_tags=tags_metadata,docs_url="/",version="2.1.19", servers=[
-        {"url": "https://api.metro.net", "description": "Production environment"},
-        {"url": "https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com", "description": "Staging environment"},
-    ],root_path='/'
-)
-
+app = FastAPI(openapi_tags=tags_metadata,docs_url="/")
 # db = connect(host='', port=0, timeout=None, source_address=None)
 
 templates = Jinja2Templates(directory="app/frontend")
@@ -160,6 +158,8 @@ response = requests.get(lacmta_gtfs_rt_url)
 
 cr = csv.reader(response.text.splitlines())
 # csv_to_json(cr,jsonFilePath)
+
+app = FastAPI()
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -420,7 +420,7 @@ async def get_time():
 
 # @app.get("/agencies/")
 # async def root():
-#     return {"Metro API Version": "2.1.19"}
+#     return {"Metro API Version": "2.1.20"}
 
 # Frontend Routing
 
@@ -472,7 +472,14 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
+@app.get('/openapi.yaml', include_in_schema=False)
+@functools.lru_cache()
+def read_openapi_yaml() -> Response:
+    openapi_json= app.openapi()
+    openapi_json['servers'] = [{"url": "https://api.metro.net"}]
+    yaml_s = io.StringIO()
+    yaml.dump(openapi_json, yaml_s)
+    return Response(yaml_s.getvalue(), media_type='text/yaml')
 
 
 # end tokens
