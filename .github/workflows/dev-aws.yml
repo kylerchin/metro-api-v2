@@ -27,7 +27,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v35
         with:
-          files_ignore: documentation, .github
+          files_ignore: documentation
       - name: Upgrade AWS CLI version and setup lightsailctl
         if: steps.changed-files.outputs.any_changed == 'true'
         run: | 
@@ -82,18 +82,6 @@ jobs:
           aws lightsail create-container-service-deployment 
           --service-name dev-metro-api-v2 
           --containers '{"fastapi":{"image":"lacmta/metro-api-v2:fastapi","ports":{"80":"HTTP"},"environment":{"FTP_PASS":"${{secrets.FTP_PASS }}","FTP_SERVER":"${{secrets.FTP_SERVER }}","FTP_USERNAME":"${{secrets.FTP_USERNAME }}","SWIFTLY_AUTH_KEY_BUS":"${{secrets.SWIFTLY_AUTH_KEY_BUS}}","SWIFTLY_AUTH_KEY_RAIL":"${{secrets.SWIFTLY_AUTH_KEY_RAIL}}","URI":"${{secrets.URI}}","HASH_KEY":"${{secrets.HASH_KEY}}","HASHING_ALGORITHM":"${{secrets.HASHING_ALGORITHM}}","LOGZIO_TOKEN":"${{secrets.LOGZIO_TOKEN}}","LOGZIO_URL":"https://listener.logz.io:8071","RUNNING_ENV":"dev","MAIL_USERNAME":"${{secrets.MAIL_USERNAME}}","MAIL_PASSWORD":"${{secrets.MAIL_PASSWORD}}","MAIL_SERVER":"${{secrets.MAIL_SERVER}}"}},"data-loading-service":{"image":"lacmta/metro-api-v2:data-loading-service","environment":{"FTP_PASS":"${{secrets.FTP_PASS }}","FTP_SERVER":"${{secrets.FTP_SERVER }}","FTP_USERNAME":"${{secrets.FTP_USERNAME }}","SWIFTLY_AUTH_KEY_BUS":"${{secrets.SWIFTLY_AUTH_KEY_BUS}}","SWIFTLY_AUTH_KEY_RAIL":"${{secrets.SWIFTLY_AUTH_KEY_RAIL}}","URI":"${{secrets.URI}}","HASH_KEY":"${{secrets.HASH_KEY}}","HASHING_ALGORITHM":"${{secrets.HASHING_ALGORITHM}}","LOGZIO_TOKEN":"${{secrets.LOGZIO_TOKEN}}","LOGZIO_URL":"https://listener.logz.io:8071","RUNNING_ENV":"dev","MAIL_USERNAME":"${{secrets.MAIL_USERNAME}}","MAIL_PASSWORD":"${{secrets.MAIL_PASSWORD}}","MAIL_SERVER":"${{secrets.MAIL_SERVER}}"}}}' --public-endpoint '{"containerName": "fastapi","containerPort": 80,"healthCheck":{ "healthyThreshold": 2,"unhealthyThreshold": 2,"timeoutSeconds": 2,"intervalSeconds": 5,"path": "/","successCodes": "200-499"}}'
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-          cache-dependency-path: '**/package-lock.json'
-
-      - name: Install dependencies
-        if: steps.changed-documentation.outputs.any_changed == 'true'
-        run: >
-          cd documentation
-          yarn install --frozen-lockfile
   deploy-documentation:
     runs-on: ubuntu-latest
     defaults:
@@ -105,12 +93,21 @@ jobs:
         with:
           node-version: 18
           cache: yarn
-          cache-dependency-path: '**/package-lock.json'
       - name: 🔎 Check for change in docs folder
         id: changed-documentation
         uses: tj-actions/changed-files@v35
         with:
           files: documentation
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install dependencies
+        if: steps.changed-documentation.outputs.any_changed == 'true'
+        run: >
+          yarn install --frozen-lockfile
       - name: Build website
         if: steps.changed-documentation.outputs.any_changed == 'true'
         run: >
