@@ -100,8 +100,8 @@ jobs:
       - name: Build website
         if: steps.changed-documentation.outputs.any_changed == 'true'
         run: >
-        cd documentation
-        yarn build
+          cd documentation
+          yarn build
       - name: Deploy Documentation to GitHub Pages
         if: steps.changed-documentation.outputs.any_changed == 'true'
         uses: peaceiris/actions-gh-pages@v3
