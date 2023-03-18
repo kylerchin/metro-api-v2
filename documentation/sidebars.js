@@ -23,7 +23,7 @@ const sidebars = {
         type: "generated-index",
         title: "Metro API",
         description:
-          "This is a sample server Petstore server. You can find out more about Swagger at http://swagger.io or on irc.freenode.net, #swagger. For this sample, you can use the api key special-key to test the authorization filters.",
+          "The Metro API is a RESTful API that provides access to the Metro Transit system in Los Angeles County. The API provides access to real-time bus and rail information, as well as schedules and route information. The API is free to use and does not require an API key. The API is provided by the Los Angeles County Metropolitan Transportation Authority (Metro). ",
         slug: "/api"
       },
       // @ts-ignore
