@@ -9,7 +9,7 @@ const config = {
   title: "Metro API",
   tagline: "Go Metro",
   url: "https://api.metro.net",
-  baseUrl: "/",
+  baseUrl: "/metro-api-v2/",
   onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.png",
