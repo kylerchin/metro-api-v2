@@ -28,8 +28,8 @@ const config = {
           sidebarPath: require.resolve("./sidebars.js"),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          // editUrl:
+          //   "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
           docLayoutComponent: "@theme/DocPage",
           docItemComponent: "@theme/ApiItem" // Derived from docusaurus-theme-openapi
         },
@@ -37,8 +37,8 @@ const config = {
           showReadingTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/"
+          // editUrl:
+          //   "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/"
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css")
@@ -88,7 +88,7 @@ const config = {
             to: "/docs/api"
           },
           {
-            href: "https://github.com/facebook/docusaurus",
+            href: "https://github.com/lacmta/metro-api-v2",
             label: "GitHub",
             position: "right"
           }
@@ -110,16 +110,8 @@ const config = {
             title: "Community",
             items: [
               {
-                label: "Stack Overflow",
-                href: "https://stackoverflow.com/questions/tagged/docusaurus"
-              },
-              {
-                label: "Discord",
-                href: "https://discordapp.com/invite/docusaurus"
-              },
-              {
                 label: "Twitter",
-                href: "https://twitter.com/docusaurus"
+                href: "https://twitter.com/metrolosangeles"
               }
             ]
           },
@@ -132,12 +124,12 @@ const config = {
               },
               {
                 label: "GitHub",
-                href: "https://github.com/facebook/docusaurus"
+                href: "https://github.com/lacmta/"
               }
             ]
           }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`
+        copyright: `Copyright © ${new Date().getFullYear()}`
       },
       prism: {
         theme: lightCodeTheme,
@@ -147,6 +139,7 @@ const config = {
     }),
 
   plugins: [
+    require.resolve('docusaurus-lunr-search'),
     [
       "docusaurus-plugin-openapi-docs",
       {
@@ -168,8 +161,10 @@ const config = {
       }
     ]
   ],
-
-  themes: ["docusaurus-theme-openapi-docs"]
+  markdown: {
+    mermaid: true,
+  },
+  themes: ["docusaurus-theme-openapi-docs",'@docusaurus/theme-mermaid']
 };
 
 module.exports = config;
