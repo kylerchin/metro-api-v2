@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import styles from './styles.module.css';
-
+import { Card,CardBody,CardFooter,CardGroup,CardHeader,CardMedia } from '@trussworks/react-uswds'
 const FeatureList = [
   {
     title: 'Easy to Use',
@@ -35,30 +35,36 @@ const FeatureList = [
   },
 ];
 
-function Feature({Svg, title, description}) {
+function CardFeature({Svg, title, description}) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </div>
+      <Card>
+        <CardHeader className="bg-base-lightest">
+          <h3 className="usa-card__heading">{title}</h3>
+        </CardHeader>
+        <CardMedia imageClass="add-aspect-16x9">
+          <Svg className={styles.featureSVG} 
+            alt="An image's description"
+          />
+        </CardMedia>
+        <CardBody className="padding-top-3">
+          <p>{description}</p>
+        </CardBody>
+      </Card>
     </div>
   );
 }
 
 export default function HomepageFeatures() {
   return (
-    <section className={styles.features}>
+    <div className={styles.features}>
       <div className="container">
-        <div className="row">
+        <CardGroup>
           {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+            <CardFeature key={idx} {...props} />
           ))}
-        </div>
+          </CardGroup>
       </div>
-    </section>
+    </div>
   );
 }
