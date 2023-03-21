@@ -131,6 +131,11 @@ const config = {
         ],
         copyright: `Copyright © ${new Date().getFullYear()}`
       },
+      colorMode: {
+        disableSwitch: true,
+        defaultMode: "light",
+        respectPrefersColorScheme: false,
+      },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
@@ -164,7 +169,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ["docusaurus-theme-openapi-docs",'@docusaurus/theme-mermaid']
+  themes: ["docusaurus-theme-openapi-docs",'@docusaurus/theme-mermaid','docusaurus-plugin-sass']
 };
 
 module.exports = config;
