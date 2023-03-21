@@ -1,5 +1,7 @@
 # import data modules
 from distutils.command.config import config
+from typing import Annotated
+
 import http
 import json
 import requests
@@ -12,7 +14,7 @@ from typing import Dict, List, Optional
 
 from datetime import timedelta, date, datetime
 
-from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
+from fastapi import FastAPI, Request, Response, Depends, HTTPException, status, WebSocket, WebSocketException
 # from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,PlainTextResponse
@@ -422,6 +424,15 @@ async def get_time():
 # @app.get("/agencies/")
 # async def root():
 #     return {"Metro API Version": "2.1.20"}
+
+# WebSockets
+@app.websocket("/gtfs_rt_live")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
+
 
 # Frontend Routing
 
