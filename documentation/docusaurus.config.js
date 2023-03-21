@@ -144,7 +144,7 @@ const config = {
     }),
 
   plugins: [
-    require.resolve('docusaurus-lunr-search'),
+    [require.resolve('docusaurus-lunr-search'),{indexBaseUrl: true}],
     [
       "docusaurus-plugin-openapi-docs",
       {
