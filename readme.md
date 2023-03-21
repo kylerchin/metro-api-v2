@@ -130,3 +130,6 @@ To use this configuration, press `F1` or `ctrl-shift-P` and choose `Debug: Selec
 
 - All GTFS endpoints require an `agency_id`.
 - If no specific value for a parameter is specified at the end, the endpoint will return all values for that parameter.
+
+## Documentation
+Visit [https://api.metro.net/docs/](https://api.metro.net/docs/)
