@@ -24,6 +24,7 @@ google
 protobuf==3.19.*
 GeoAlchemy2
 shapely
+websockets
 # redis_om
 # fastapi-redis-cache
 # fastapi-cache2[redis]
