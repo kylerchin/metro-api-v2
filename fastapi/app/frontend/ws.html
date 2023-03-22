@@ -24,9 +24,9 @@
 
         if (geojson_checkbox.checked) {
             
-            ws = new WebSocket("ws://localhost/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=true")
+            ws = new WebSocket("ws://api.metro.net/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=true")
         } else {
-            ws = new WebSocket("ws://localhost/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=false")
+            ws = new WebSocket("ws://api.metro.net/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=false")
         }
         ws.onmessage = function(event) {
             var messages = document.getElementById('messages')
