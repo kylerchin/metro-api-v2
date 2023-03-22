@@ -7,6 +7,7 @@ import json
 import requests
 import csv
 import os
+import asyncio
 
 import pytz
 
@@ -128,9 +129,10 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(openapi_tags=tags_metadata,docs_url="/")
 # db = connect(host='', port=0, timeout=None, source_address=None)
 
-templates = Jinja2Templates(directory="app/documentation")
+# templates = Jinja2Templates(directory="app/documentation")
 # app.mount("/", StaticFiles(directory="app/documentation", html=True))
-# app.mount("/", StaticFiles(directory="app/frontend"))
+templates = Jinja2Templates(directory="app/frontend")
+app.mount("/", StaticFiles(directory="app/frontend"))
 
 # code from https://fastapi-restful.netlify.app/user-guide/repeated-tasks/
 
@@ -426,36 +428,71 @@ async def get_time():
 #     return {"Metro API Version": "2.1.20"}
 
 # WebSockets
-@app.websocket("/gtfs_rt_live")
-async def websocket_endpoint(websocket: WebSocket):
+import random
+@app.websocket("/live/get_time")
+async def live_time_updates(websocket: WebSocket):
     await websocket.accept()
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(f"Message text was: {data}")
+        payload = {"time": str(datetime.now()), "message": "Hello World!","value":random.randint(1,100)}
+        await websocket.send_json(payload)
+        await asyncio.sleep(10)
 
+@app.websocket("/{agency_id}/live/vehicle_positions/{field_name}/{field_value}")
+async def live_vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, geojson:bool=False,field_value=Optional[str], db: Session = Depends(get_db),*, websocket: WebSocket):
+    ws_time_out = 20
+    await websocket.accept()
+    while True:
+        # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
+        result = ""
+        if field_name in get_columns_from_schema('vehicle_position_updates'):
+            if field_value == 'list':
+                result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,agency_id.value)
+                await websocket.send_json(result)
+                await asyncio.sleep(ws_time_out)
+            multiple_values = field_value.split(',')
+            if len(multiple_values) > 1:
+                result_array = []
+                for value in multiple_values:
+                    temp_result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,value,geojson,agency_id.value)
+                    if len(temp_result) == 0:
+                        temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
+                    result_array.append(temp_result)
+                await websocket.send_text(result_array)
+                await asyncio.sleep(ws_time_out)
+            else:
+                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,field_value,geojson,agency_id.value)
+                if len(result) == 0:
+                    result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
+                    await websocket.send_json(result)
+                    await asyncio.sleep(ws_time_out)
+                await websocket.send_json(jsonable_encoder(result))
+                await asyncio.sleep(ws_time_out)
 
 # Frontend Routing
+@app.get("/websocket_test")
+def read_root(request: Request):
+    return templates.TemplateResponse("ws.html", {"request": request})
 
-class SPAStaticFiles(StaticFiles):
-    async def get_response(self, path: str, scope):
-        response = await super().get_response(path, scope)
-        if response.status_code == 404:
-            response = await super().get_response('.', scope)
-        return response
+# class SPAStaticFiles(StaticFiles):
+#     async def get_response(self, path: str, scope):
+#         response = await super().get_response(path, scope)
+#         if response.status_code == 404:
+#             response = await super().get_response('.', scope)
+#         return response
 
-app.mount('/', SPAStaticFiles(directory='app/documentation', html=True), name='frontend')
+# app.mount('/', SPAStaticFiles(directory='app/documentation', html=True), name='frontend')
 
-# @app.get("/",response_class=HTMLResponse)
-# def index(request:Request):
-#     return templates.TemplateResponse("index.html",context={"request":request})
-    # human_readable_default_update = None
-    # try:
-    #     default_update = datetime.fromtimestamp(Config.API_LAST_UPDATE_TIME)
-    #     default_update = default_update.astimezone(pytz.timezone("America/Los_Angeles"))
-    #     human_readable_default_update = default_update.strftime('%Y-%m-%d %H:%M')
-    # except Exception as e:
-    #     logger.exception(type(e).__name__ + ": " + str(e), exc_info=False)
-    # return templates.TemplateResponse("index.html", context= {"request": request,"api_version":Config.CURRENT_VERSION,"update_time":human_readable_default_update})
+@app.get("/",response_class=HTMLResponse)
+def index(request:Request):
+    # return templates.TemplateResponse("index.html",context={"request":request})
+    human_readable_default_update = None
+    try:
+        default_update = datetime.fromtimestamp(Config.API_LAST_UPDATE_TIME)
+        default_update = default_update.astimezone(pytz.timezone("America/Los_Angeles"))
+        human_readable_default_update = default_update.strftime('%Y-%m-%d %H:%M')
+    except Exception as e:
+        logger.exception(type(e).__name__ + ": " + str(e), exc_info=False)
+    return templates.TemplateResponse("index.html", context= {"request": request,"api_version":Config.CURRENT_VERSION,"update_time":human_readable_default_update})
 
 class LogFilter(logging.Filter):
     def filter(self, record):
