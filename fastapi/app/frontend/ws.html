@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro WebSocket Test</title>
+    <link rel="stylesheet" href="https://lacmta.github.io/design-system/dist/css/styles.css" type="text/css">
+</head>
+<script>
+    addEventListeners()
+    function addEventListeners(){
+        let vehicleField = document.getElementById("vehicleField")
+        vehicleField.addEventListener("change", updateField)
+    }
+    function updateField(){
+        var thisOption  = document.getElementById('vehicleField').value;
+        return thisOption
+    }
+    var ws = null;
+    function connect(event) {
+        var vehicleField = document.getElementById("vehicleField")
+        var fieldValue = document.getElementById("fieldValue")
+        var geojson_checkbox = document.getElementById("geojson_checkbox")
+
+        if (geojson_checkbox.checked) {
+            
+            ws = new WebSocket("ws://localhost/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=true")
+        } else {
+            ws = new WebSocket("ws://localhost/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=false")
+        }
+        ws.onmessage = function(event) {
+            var messages = document.getElementById('messages')
+            var message = document.createElement('li')
+            var content = document.createTextNode(event.data)
+            message.appendChild(content)
+            messages.appendChild(message)
+        };
+        event.preventDefault()
+    }
+    function sendMessage(event) {
+        var input = document.getElementById("messageText")
+        ws.send(input.value)
+        input.value = ''
+        event.preventDefault()
+    }
+</script>
+<body>
+    <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+    <div class="usa-overlay"></div>
+    {% include 'header.html' %}
+    <div class="usa-section">
+      <div class="grid-container">
+        <div class="grid-row grid-gap">
+          <main class="
+              usa-layout-docs__main
+              desktop:grid-col-12
+              usa-prose usa-layout-docs
+            " id="main-content">
+            <h1>Metro WebSocket Test</h1>
+            {% if update_time != None %}
+              <div class="usa-alert usa-alert--info usa-alert--slim">
+                <div class="usa-alert__body">
+                  <p class="usa-alert__text">
+                    <b>Last updated: {{update_time}}</b>
+                    <span id="last_updated_label"></span>
+                  </p>
+                </div>
+              </div>
+            {% endif %}
+
+  
+            <p class="usa-intro">
+                Metro WebSocket Test
+            </p>
+            <form action="" onsubmit="sendMessage(event)">
+                <label>
+                    Vehicle Positions Field: 
+                        <select id="vehicleField" />
+                            <option value="route_code" selected="selected">
+                            Route Code
+                        </option>
+                        <option value="route_id">
+                            Route ID
+                        </option>
+                        <option value="vehicle_id">
+                            Vehicle ID
+                        </option>
+                    </select>
+                </label>
+                <label>Value: 
+                    <input type="text" id="fieldValue" autocomplete="off" value="all"/>
+                </label>
+
+                <label> Format as GeoJSON:
+                    <input type="checkbox" id="geojson_checkbox" name="geojson_checkbox" value="geojson" checked="false">
+                </label>
+                <button onclick="connect(event)">Connect to WebSocket</button>
+                <hr>
+                <!-- <label>Message: <input type="text" id="messageText" autocomplete="off"/></label> -->
+                <!-- <button>Send</button> -->
+            </form>
+            <ul id='messages'>
+            </ul>
+        
+          </main>
+        </div>
+      </div>
+    </div>
+    <script src="https://lacmta.github.io/design-system/dist/js/uswds-init.min.js"></script>
+    <script src="https://lacmta.github.io/design-system/dist/js/uswds.min.js"></script>
+</body>
+</html>
