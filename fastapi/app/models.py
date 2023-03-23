@@ -97,6 +97,7 @@ class RouteOverview(Base):
     description = Column(String)
     pdf_file_url = Column(String)
     pdf_file_link = Column(String)
+    iconography_url = Column(String)
 
 # route stops: route_id,stop_id,day_type,stop_sequence,direction_id,stop_name,coordinates,departure_times
 class RouteStops(Base):
