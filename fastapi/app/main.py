@@ -15,7 +15,7 @@ from typing import Dict, List, Optional
 
 from datetime import timedelta, date, datetime
 
-from fastapi import FastAPI, Request, Response, Depends, HTTPException, status, WebSocket, WebSocketException
+from fastapi import FastAPI, Request, Response, Depends, HTTPException, status, WebSocket, WebSocketException, WebSocketDisconnect
 # from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse,PlainTextResponse
@@ -32,13 +32,13 @@ import yaml
 
 from starlette.middleware.cors import CORSMiddleware
 
-# from fastapi_cache import FastAPICache
-# from fastapi_cache.backends.redis import RedisBackend
-# from fastapi_cache.decorator import cache
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
 from starlette.requests import Request
 from starlette.responses import Response
 
-# from redis import asyncio as aioredis
+from redis import asyncio as aioredis
 from enum import Enum
 
 # for OAuth2
@@ -56,7 +56,6 @@ from pathlib import Path
 from logzio.handler import LogzioHandler
 import logging
 import typing as t
-
 
 
 class EndpointFilter(logging.Filter):
@@ -260,7 +259,7 @@ async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool
         for value in multiple_values:
             temp_result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,value,geojson,agency_id.value)
             if len(temp_result) == 0:
-                temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
+                temp_result = { "message": "field_value '" + value + "' not found in field_name '" + value + "'" }
             result_array.append(temp_result)
         return result_array
     else:
@@ -268,11 +267,11 @@ async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
     
-# @app.get("/{agency_id}/trip_detail/{route_code}",tags=["Real-Time data","Static Data"])
-# async def get_trip_detail(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
-#     result = crud.get_gtfs_rt_vehicle_positions_trip_data(db,route_code,geojson,agency_id.value)
-#     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
-#     return result
+@app.get("/{agency_id}/trip_detail/route_code/{route_code}",tags=["Real-Time data","Static Data"])
+async def get_trip_detail_by_route_code(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
+    result = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
+    # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
+    return result
 
 @app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
@@ -403,7 +402,6 @@ async def get_agency(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
     return result
 
 #### END GTFS Static data endpoints ####
-#### END Static data endpoints ####
 
 
 #### Begin Other data endpoints ####
@@ -428,45 +426,26 @@ async def get_time():
 #     return {"Metro API Version": "2.1.20"}
 
 # WebSockets
-import random
 @app.websocket("/live/get_time")
 async def live_time_updates(websocket: WebSocket):
     await websocket.accept()
     while True:
-        payload = {"time": str(datetime.now()), "message": "Hello World!","value":random.randint(1,100)}
+        payload = {"time": str(datetime.now()), "message": "Hello World!"}
         await websocket.send_json(payload)
         await asyncio.sleep(10)
 
-@app.websocket("/{agency_id}/live/vehicle_positions/{field_name}/{field_value}")
-async def live_vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, geojson:bool=False,field_value=Optional[str], db: Session = Depends(get_db),*, websocket: WebSocket):
-    ws_time_out = 20
+@app.websocket("/{agency_id}/live/trip_detail/route_code/{route_code}")
+async def live_time_updates(websocket: WebSocket,agency_id: AgencyIdEnum, route_code: str, geojson:bool=False, db: Session = Depends(get_db)):
     await websocket.accept()
-    while True:
-        # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
-        result = ""
-        if field_name in get_columns_from_schema('vehicle_position_updates'):
-            if field_value == 'list':
-                result = crud.list_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,agency_id.value)
-                await websocket.send_json(result)
-                await asyncio.sleep(ws_time_out)
-            multiple_values = field_value.split(',')
-            if len(multiple_values) > 1:
-                result_array = []
-                for value in multiple_values:
-                    temp_result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,value,geojson,agency_id.value)
-                    if len(temp_result) == 0:
-                        temp_result = { "message": "field_value '" + value + "' not found in field_name '" + field_name.value + "'" }
-                    result_array.append(temp_result)
-                await websocket.send_text(result_array)
-                await asyncio.sleep(ws_time_out)
-            else:
-                result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name.value,field_value,geojson,agency_id.value)
-                if len(result) == 0:
-                    result = { "message": "field_value '" + field_value + "' not found in field_name '" + field_name.value + "'" }
-                    await websocket.send_json(result)
-                    await asyncio.sleep(ws_time_out)
-                await websocket.send_json(jsonable_encoder(result))
-                await asyncio.sleep(ws_time_out)
+    try:
+        while True:
+            result_array = []
+            result_array = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
+            await websocket.send_json(jsonable_encoder(result_array))
+            await asyncio.sleep(10)
+    except WebSocketDisconnect:
+        await websocket.close()
+
 
 # Frontend Routing
 @app.get("/websocket_test")
@@ -594,7 +573,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# @app.on_event("startup")
-# async def startup_redis():
-#     redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
-#     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+@app.on_event("startup")
+async def startup_redis():
+    redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")

@@ -22,5 +22,6 @@ google
 shapely
 pandas
 polyline
-# fastapi-cache2[redis]
-# aioredis
+websockets
+fastapi-cache2[redis]
+aioredis

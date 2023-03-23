@@ -23,7 +23,7 @@ google
 shapely
 polyline
 websockets
-# redis_om
-# fastapi-redis-cache
-# fastapi-cache2[redis]
-# aioredis
+redis_om
+fastapi-redis-cache
+fastapi-cache2[redis]
+aioredis

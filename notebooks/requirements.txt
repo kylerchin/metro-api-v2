@@ -22,7 +22,7 @@ protobuf==3.19.6
 google
 shapely
 polyline
-# redis_om
-# fastapi-redis-cache
-# fastapi-cache2[redis]
-# aioredis
+redis_om
+fastapi-redis-cache
+fastapi-cache2[redis]
+aioredis
