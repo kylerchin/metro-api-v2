@@ -18,16 +18,13 @@
     }
     var ws = null;
     function connect(event) {
-        var vehicleField = document.getElementById("vehicleField")
-        var fieldValue = document.getElementById("fieldValue")
+        var agencyField = document.getElementById("agencyField")
+        var routeCode = document.getElementById("routeCode")
         var geojson_checkbox = document.getElementById("geojson_checkbox")
-
-        if (geojson_checkbox.checked) {
-            
-            ws = new WebSocket("ws://api.metro.net/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=true")
-        } else {
-            ws = new WebSocket("ws://api.metro.net/LACMTA/live/vehicle_positions/" + vehicleField.value + "/" + fieldValue.value + "?geojson=false")
-        }
+        let base_url = window.location.hostname
+        // {agency_id}/live/trip_detail/route_code/{route_code}
+        let target_url = "ws://"+base_url+"/"+agencyField.value+"/live/trip_detail/route_code/" + routeCode.value + "?geojson="+geojson_checkbox.checked
+        ws = new WebSocket(target_url)
         ws.onmessage = function(event) {
             var messages = document.getElementById('messages')
             var message = document.createElement('li')
@@ -74,21 +71,18 @@
             </p>
             <form action="" onsubmit="sendMessage(event)">
                 <label>
-                    Vehicle Positions Field: 
-                        <select id="vehicleField" />
-                            <option value="route_code" selected="selected">
-                            Route Code
+                    Agency ID: 
+                        <select id="agencyField" />
+                            <option value="LACMTA" selected="selected">
+                            LACMTA
                         </option>
-                        <option value="route_id">
-                            Route ID
-                        </option>
-                        <option value="vehicle_id">
-                            Vehicle ID
+                        <option value="LACMTA_Rail">
+                            LACMTA_Rail
                         </option>
                     </select>
                 </label>
                 <label>Value: 
-                    <input type="text" id="fieldValue" autocomplete="off" value="all"/>
+                    <input type="text" id="routeCode" autocomplete="off" value="all"/>
                 </label>
 
                 <label> Format as GeoJSON:

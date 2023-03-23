@@ -192,9 +192,9 @@ def get_all_gtfs_rt_vehicle_positions_trip_data(db,agency_id: str,geojson:bool):
     else:
         return result
 
-def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agency_id: str):
+def get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code: str, geojson:bool,agency_id:str):
     result = []
-    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.route_code == route_code,gtfs_models.VehiclePosition.agency_id == agency_id).all()
     if geojson == True:
         this_json = {}
         count = 0
@@ -206,6 +206,48 @@ def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agen
         this_json['metadata'] = {'title': 'Vehicle Positions'}
         this_json['type'] = "FeatureCollection"
         this_json['features'] = features
+        return this_json
+    for row in the_query:
+        if row.trip_id is None:
+            message_object = [{'message': 'No trip data for this vehicle id: ' + str(route_code)}]
+            return message_object
+        new_row = vehicle_position_reformat_for_trip_details(row,geojson)
+        stop_name_query = db.query(models.Stops.stop_name).filter(models.Stops.stop_id == new_row.stop_id,models.Stops.agency_id == agency_id).first()
+        new_row.stop_name = stop_name_query[0]
+        upcoming_stop_time_update_query = db.query(gtfs_models.StopTimeUpdate).filter(gtfs_models.StopTimeUpdate.trip_id == new_row.trip_id,gtfs_models.StopTimeUpdate.stop_sequence == new_row.current_stop_sequence).first()
+        if upcoming_stop_time_update_query is not None:
+            new_row.trip_assigned = True
+        new_row.upcoming_stop_time_update = upcoming_stop_time_reformat(upcoming_stop_time_update_query)
+        route_code_query = db.query(models.StopTimes.route_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
+        destination_code_query = db.query(models.StopTimes.destination_code).filter(models.StopTimes.trip_id == new_row.trip_id,models.StopTimes.stop_sequence == new_row.current_stop_sequence).first()
+        new_row.route_code = route_code_query[0]
+        new_row.destination_code = destination_code_query[0]
+        result.append(new_row)
+    if result == []:
+        message_object = [{'message': 'No vehicle data for this vehicle id: ' + str(route_code)}]
+        return message_object
+    else:
+        return result
+
+
+def get_gtfs_rt_vehicle_positions_trip_data(db,vehicle_id: str,geojson:bool,agency_id: str):
+    result = []
+    the_query = db.query(gtfs_models.VehiclePosition).filter(gtfs_models.VehiclePosition.vehicle_id == vehicle_id,gtfs_models.VehiclePosition.agency_id == agency_id).all()
+    if geojson == True:
+        this_json = {}
+        count = 0
+        features = []
+        for row in the_query:
+            count += 1
+            features.append(vehicle_position_reformat(row,geojson))
+            if row.trip_id is None:
+                message_object = [{'message': 'No trip data for this vehicle id: ' + str(vehicle_id)}]
+                this_json['metadata'] = {'warning': message_object}
+        this_json['metadata'] = {'count': count}
+        this_json['metadata'] = {'title': 'Vehicle Positions'}
+        this_json['type'] = "FeatureCollection"
+        this_json['features'] = features
+        
         return this_json
     for row in the_query:
         if row.trip_id is None:
