@@ -4,32 +4,29 @@ import styles from './styles.module.css';
 import { Card,CardBody,CardFooter,CardGroup,CardHeader,CardMedia } from '@trussworks/react-uswds'
 const FeatureList = [
   {
-    title: 'Easy to Use',
+    title: 'Static + Realtime GTFS',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Access LA Metro&apos;s static and realtime GTFS data as JSON via our API endpoints.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Powered by Metro\'s API',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Add Metro's API to your website or app and let us know!
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Constant Development',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        We're constantly working on our API as we get it to a stable release!
       </>
     ),
   },
