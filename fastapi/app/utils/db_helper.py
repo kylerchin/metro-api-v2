@@ -149,7 +149,10 @@ def vehicle_position_reformat_for_trip_details(row,geojson=False):
         if row.position_speed:
             del row.position_speed
         if row.geometry:
-            row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            try:
+                row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            except:
+                row.geometry = None
 
         if geojson == True:
             geojson_row['type'] = 'Feature'
