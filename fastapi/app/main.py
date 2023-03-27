@@ -49,7 +49,7 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 
 from .utils.log_helper import *
 from . import crud, models, security, schemas
-from .database import Session, engine, session, get_db
+from .database import Session, engine, session, get_db,get_async_db
 from .config import Config
 from pathlib import Path
 
@@ -267,13 +267,13 @@ async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
     
-@app.get("/{agency_id}/trip_detail/route_code/{route_code}",tags=["Real-Time data","Static data"])
+@app.get("/{agency_id}/trip_detail/route_code/{route_code}",tags=["Real-Time data","Static Data"])
 async def get_trip_detail_by_route_code(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
     result = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
 
-@app.get("/canceled_service_summary",tags=["Canceled trips data"])
+@app.get("/canceled_service_summary",tags=["Real-Time data"])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     canceled_trips_summary = {}
@@ -301,13 +301,13 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
 #### END GTFS-RT Routes ####
 
 
-@app.get("/canceled_service/line/{line}",tags=["Canceled trips data"])
+@app.get("/canceled_service/line/{line}",tags=["Real-Time data"])
 async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
     result = crud.get_canceled_trips(db,line)
     json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/canceled_service/all",tags=["Canceled trips data"])
+@app.get("/canceled_service/all",tags=["Real-Time data"])
 async def get_canceled_trip(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     json_compatible_item_data = jsonable_encoder(result)
@@ -402,6 +402,7 @@ async def get_agency(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
     return result
 
 #### END GTFS Static data endpoints ####
+#### END Static data endpoints ####
 
 
 #### Begin Other data endpoints ####
@@ -426,26 +427,69 @@ async def get_time():
 #     return {"Metro API Version": "2.1.20"}
 
 # WebSockets
+import random
 @app.websocket("/live/get_time")
 async def live_time_updates(websocket: WebSocket):
     await websocket.accept()
     while True:
-        payload = {"time": str(datetime.now()), "message": "Hello World!"}
+        payload = {"time": str(datetime.now()), "message": "Hello World!","value":random.randint(1,100)}
         await websocket.send_json(payload)
         await asyncio.sleep(10)
 
-@app.websocket("/{agency_id}/live/trip_detail/route_code/{route_code}")
-async def live_time_updates(websocket: WebSocket,agency_id: AgencyIdEnum, route_code: str, geojson:bool=False, db: Session = Depends(get_db)):
-    await websocket.accept()
-    try:
-        while True:
-            result_array = []
-            result_array = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
-            await websocket.send_json(jsonable_encoder(result_array))
-            await asyncio.sleep(10)
-    except WebSocketDisconnect:
-        await websocket.close()
 
+async def get_text():
+    for i in range(5):
+        yield i
+        # time.sleep(2)  
+        await asyncio.sleep(5)
+
+@app.websocket("/{agency_id}/live/trip_detail/route_code/{route_code}")
+async def live_get_gtfs_rt_trip_details(websocket: WebSocket,agency_id: AgencyIdEnum, route_code: str, geojson:bool=False, db: Session = Depends(get_async_db)):
+    await websocket.accept()
+    async with db as session:
+        try:
+            while True:
+                async for result in crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(session,route_code,geojson,agency_id.value):
+                    await websocket.send_json(result)
+                    await session.commit()
+                    await asyncio.sleep(10)
+        except WebSocketDisconnect:
+            await websocket.close()
+            # result_array = []
+            # result_array = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(session,route_code,geojson,agency_id.value)
+            # await websocket.send_json(crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(session,route_code,geojson,agency_id.value))
+            # await websocket.send_json(jsonable_encoder(result_array))
+
+            await asyncio.sleep(10)
+        # payload = {"time": str(datetime.now()), "message": "Hello World!","value":random.randint(1,100)}
+        # await websocket.send_json(payload)
+        # await asyncio.sleep(10)
+
+@app.get("/{agency_id}/trip_detail_route_code/{route_code}",tags=["Real-Time data"])
+async def get_trip_detail(agency_id: AgencyIdEnum, route_code: str, geojson:bool=False,db: Session = Depends(get_db)):
+    result_array = []
+    temp_result = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
+    if len(temp_result) == 0:
+        temp_result = { "message": "route'" + route_code + "' has no live trips'" }
+        return temp_result
+    result_array.append(temp_result)
+    return result_array
+
+@app.websocket("/{agency_id}/live/trip_detail/route_code/{route_code}")
+async def live_vehicle_position_updates_by_route_code(websocket: WebSocket,agency_id: AgencyIdEnum, route_code: str, geojson:bool=False, db: Session = Depends(get_async_db)):
+    ws_time_out = 45
+    await websocket.accept()
+    while True:
+        result_array = []
+        result_array = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code,geojson,agency_id.value)
+        if len(result) == 0:
+            result = { "message": "route'" + route_code + "' has no live trips'" }
+            await websocket.send_json(result)
+            await asyncio.sleep(ws_time_out)
+        else:
+            await websocket.send_json(jsonable_encoder(result_array))
+            await asyncio.sleep(ws_time_out)
+        await websocket.close()
 
 # Frontend Routing
 @app.get("/websocket_test")
