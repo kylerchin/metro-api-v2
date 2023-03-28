@@ -436,13 +436,6 @@ async def live_time_updates(websocket: WebSocket):
         await websocket.send_json(payload)
         await asyncio.sleep(10)
 
-
-async def get_text():
-    for i in range(5):
-        yield i
-        # time.sleep(2)  
-        await asyncio.sleep(5)
-
 @app.websocket("/{agency_id}/live/trip_detail/route_code/{route_code}")
 async def live_get_gtfs_rt_trip_details(websocket: WebSocket,agency_id: AgencyIdEnum, route_code: str, geojson:bool=False, db: Session = Depends(get_async_db)):
     await websocket.accept()
