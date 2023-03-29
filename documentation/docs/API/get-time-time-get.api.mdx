@@ -5,7 +5,7 @@ description: "Get Time"
 sidebar_label: "Get Time"
 hide_title: true
 hide_table_of_contents: true
-api: {"operationId":"get_time_time_get","responses":{"200":{"content":{"application/json":{"schema":{}}},"description":"Successful Response"}},"description":"Get Time","method":"get","path":"/time","servers":[{"url":"https://api.metro.net"}],"securitySchemes":{"OAuth2PasswordBearer":{"flows":{"password":{"scopes":{},"tokenUrl":"token"}},"type":"oauth2"}},"info":{"title":"FastAPI","version":"0.1.0"},"postman":{"name":"Get Time","description":{"type":"text/plain"},"url":{"path":["time"],"host":["{{baseUrl}}"],"query":[],"variable":[]},"header":[{"key":"Accept","value":"application/json"}],"method":"GET"}}
+api: {"operationId":"get_time_time_get","responses":{"200":{"content":{"application/json":{"schema":{}}},"description":"Successful Response"}},"description":"Get Time","method":"get","path":"/time","servers":[{"description":"Production Server","url":"https://api.metro.net"},{"description":"Development Server","url":"https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com/"}],"securitySchemes":{"OAuth2PasswordBearer":{"flows":{"password":{"scopes":{},"tokenUrl":"token"}},"type":"oauth2"}},"info":{"title":"FastAPI","version":"0.1.0"},"postman":{"name":"Get Time","description":{"type":"text/plain"},"url":{"path":["time"],"host":["{{baseUrl}}"],"query":[],"variable":[]},"header":[{"key":"Accept","value":"application/json"}],"method":"GET"}}
 sidebar_class_name: "get api-method"
 info_path: docs/api/fastapi
 custom_edit_url: null

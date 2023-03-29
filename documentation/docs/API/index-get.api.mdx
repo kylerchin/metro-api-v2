@@ -5,7 +5,7 @@ description: "Index"
 sidebar_label: "Index"
 hide_title: true
 hide_table_of_contents: true
-api: {"operationId":"index__get","responses":{"200":{"content":{"text/html":{"schema":{"type":"string"}}},"description":"Successful Response"}},"description":"Index","method":"get","path":"/","servers":[{"url":"https://api.metro.net"}],"securitySchemes":{"OAuth2PasswordBearer":{"flows":{"password":{"scopes":{},"tokenUrl":"token"}},"type":"oauth2"}},"info":{"title":"FastAPI","version":"0.1.0"},"postman":{"name":"Index","description":{"type":"text/plain"},"url":{"path":[""],"host":["{{baseUrl}}"],"query":[],"variable":[]},"header":[{"key":"Accept","value":"text/html"}],"method":"GET"}}
+api: {"operationId":"index__get","responses":{"200":{"content":{"text/html":{"schema":{"type":"string"}}},"description":"Successful Response"}},"description":"Index","method":"get","path":"/","servers":[{"description":"Production Server","url":"https://api.metro.net"},{"description":"Development Server","url":"https://dev-metro-api-v2.ofhq3vd1r7une.us-west-2.cs.amazonlightsail.com/"}],"securitySchemes":{"OAuth2PasswordBearer":{"flows":{"password":{"scopes":{},"tokenUrl":"token"}},"type":"oauth2"}},"info":{"title":"FastAPI","version":"0.1.0"},"postman":{"name":"Index","description":{"type":"text/plain"},"url":{"path":[""],"host":["{{baseUrl}}"],"query":[],"variable":[]},"header":[{"key":"Accept","value":"text/html"}],"method":"GET"}}
 sidebar_class_name: "get api-method"
 info_path: docs/api/fastapi
 custom_edit_url: null
