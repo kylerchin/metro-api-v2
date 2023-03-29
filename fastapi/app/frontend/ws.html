@@ -17,13 +17,25 @@
         return thisOption
     }
     var ws = null;
+
+    function appendGeojsonToUrl(url, geojson) {
+        if (geojson) {
+            url = url + "?geojson=True"
+        }
+        else{
+            url = url + "?geojson=False"
+        }
+        return url
+    }
     function connect(event) {
         var agencyField = document.getElementById("agencyField")
         var routeCode = document.getElementById("routeCode")
         var geojson_checkbox = document.getElementById("geojson_checkbox")
         let base_url = window.location.hostname
+        let target_url = "wss://"+base_url+"/"+agencyField.value+"/live/trip_detail/route_code/" + routeCode.value
+        target_url = appendGeojsonToUrl(target_url, geojson_checkbox.checked)
         // {agency_id}/live/trip_detail/route_code/{route_code}
-        let target_url = "ws://"+base_url+"/"+agencyField.value+"/live/trip_detail/route_code/" + routeCode.value + "?geojson="+geojson_checkbox.checked
+        
         ws = new WebSocket(target_url)
         ws.onmessage = function(event) {
             var messages = document.getElementById('messages')
@@ -86,7 +98,7 @@
                 </label>
 
                 <label> Format as GeoJSON:
-                    <input type="checkbox" id="geojson_checkbox" name="geojson_checkbox" value="geojson" checked="false">
+                    <input type="checkbox" id="geojson_checkbox" name="geojson_checkbox" checked="false">
                 </label>
                 <button onclick="connect(event)">Connect to WebSocket</button>
                 <hr>

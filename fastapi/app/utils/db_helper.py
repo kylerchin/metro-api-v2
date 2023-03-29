@@ -102,7 +102,7 @@ def vehicle_position_reformat(row,geojson=False):
             try:
                 row.geometry = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
             except:
-                row.geometry = None
+                row.geometry = [row.position_longitude,row.position_latitude]
 
         if geojson == True:
             geojson_row['type'] = 'Feature'
@@ -110,7 +110,7 @@ def vehicle_position_reformat(row,geojson=False):
                 try:
                     geojson_row['geometry'] = row.geometry
                 except:
-                    geojson_row['geometry'] = None
+                    geojson_row['geometry'] = [row.position_longitude,row.position_latitude]
             properties['trip'] = trip_info
             properties['vehicle'] = vehicle_info
             properties['position'] = position_info
@@ -166,6 +166,99 @@ def vehicle_position_reformat_for_trip_details(row,geojson=False):
         # row.trip = trip_info
         row.position = position_info
         return row
+
+def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
+        new_row = {}
+        trip_info = {}
+        position_info = {}
+
+        geojson_row = {}
+        properties = {}
+        if hasattr(row, 'current_status'):
+            new_row['current_status'] = get_readable_status(row.current_status)
+        trip_info['trip_assigned'] = False
+        
+        if hasattr(row, 'trip_id'):
+            trip_info['trip_assigned'] = True
+            trip_info['trip_id'] = row.trip_id
+            trip_info['current_stop_sequence'] = row.current_stop_sequence
+            
+        if row.trip_route_id:
+            trip_info['trip_route_id'] = row.trip_route_id 
+        if row.vehicle_id:
+            trip_info['vehicle_id'] = row.vehicle_id
+        if row.stop_id:
+            trip_info['stop_id'] = row.stop_id
+        if row.timestamp:
+            position_info['timestamp'] = row.timestamp
+        if row.position_latitude:
+            position_info['latitude'] = row.position_latitude
+        if row.position_longitude:
+            position_info['longitude'] = row.position_longitude
+        if row.position_bearing:
+            new_row['position_bearing'] = row.position_bearing
+        if row.position_speed:
+            new_row['position_speed'] = row.position_speed
+        if row.stop_id:
+            new_row['stop_id'] = row.stop_id
+        if row.geometry:
+            try:
+                new_row['geometry'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            except:
+                new_row['geometry'] = [row.position_longitude,row.position_latitude]
+
+        if geojson == True:
+            geojson_row['type'] = 'Feature'
+            if row.geometry:
+                geojson_row['geometry'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
+            if trip_info:
+                properties['trip_info'] = trip_info
+                properties['trip_info']['trip_id'] = trip_info['trip_id']
+                properties['trip_info']['current_stop_sequence'] = trip_info['current_stop_sequence']
+            geojson_row['properties'] = properties
+            if hasattr(new_row, 'stop_id'):
+                geojson_row['properties']['stop_id'] = new_row.stop_id
+            properties['position'] = position_info
+            properties['current_status'] = new_row['current_status']
+            geojson_row['properties']['trip_assigned'] = trip_info['trip_assigned']
+            return geojson_row
+        new_row['trip'] = trip_info
+        new_row['position'] = position_info
+        return new_row
+
+def upcoming_stop_time_reformat_for_async(stop_time_update):
+    if stop_time_update:
+        sanitized_stop_time_json = stop_time_update.trip_updates.stop_time_json.replace("'", '"')
+        update_json = json.loads(sanitized_stop_time_json)
+
+        for row in update_json:
+            if row['stop_sequence'] == stop_time_update.stop_sequence:
+                new_stop_time_object = {}
+                if row['arrival']:
+                    new_stop_time_object['arrival'] = row['arrival']
+                if row['departure']:
+                    new_stop_time_object['departure'] = row['departure']
+                new_stop_time_object['schedule_relationship'] = get_readable_schedule_relationship(row['schedule_relationship'])
+                new_stop_time_object['stop_id'] = row['stop_id']
+                new_stop_time_object['stop_sequence'] = row['stop_sequence']
+                return new_stop_time_object
+    else:
+        return False
+        # if stop_time_update.trip_updates:
+        #     
+        #     for row in update_json:
+        #         new_stop_time_object = {}
+        #         if row['stop_sequence'] == stop_time_update.stop_sequence:
+        #             if row['arrival']:
+        #                 new_stop_time_object['arrival'] = row['arrival']
+        #             if row['departure']:
+        #                 new_stop_time_object['departure'] = row['departure']
+        #             new_stop_time_object['schedule_relationship'] = get_readable_schedule_relationship(row['schedule_relationship'])
+        #             new_stop_time_object['stop_id'] = row['stop_id']
+        #             new_stop_time_object['stop_sequence'] = row['stop_sequence']
+        #             return new_stop_time_object
+            
+
 
 def upcoming_stop_time_reformat(stop_time_update):
     if stop_time_update != None:
