@@ -9,7 +9,7 @@ from schedule import every, repeat, run_pending
 import pandas as pd
 # import schedule
 
-@repeat(every(45).seconds)
+@repeat(every(15).seconds)
 def gtfs_rt_scheduler():
     try:
         gtfs_rt_helper.update_gtfs_realtime_data()
