@@ -8,7 +8,7 @@
 
 # Source Partly from: https://aws.amazon.com/getting-started/guides/deploy-webapp-lightsail/module-four/
 
-name: Deploy Docker Image to Dev AWS Lightsail Container Service
+name: Deploy Docker Image to Prod AWS Lightsail Container Service
 
 on:
   push:
