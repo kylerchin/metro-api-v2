@@ -27,3 +27,6 @@ redis_om
 fastapi-redis-cache
 fastapi-cache2[redis]
 aioredis
+asyncio
+asyncpg
+sqlalchemy[asyncio]
