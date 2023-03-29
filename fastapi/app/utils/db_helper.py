@@ -171,7 +171,6 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
         new_row = {}
         trip_info = {}
         position_info = {}
-
         geojson_row = {}
         properties = {}
         if hasattr(row, 'current_status'):
@@ -181,12 +180,13 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
         if hasattr(row, 'trip_id'):
             trip_info['trip_assigned'] = True
             trip_info['trip_id'] = row.trip_id
+            trip_info['trip_start_date'] = row.trip_start_date
             trip_info['current_stop_sequence'] = row.current_stop_sequence
             
         if row.trip_route_id:
             trip_info['trip_route_id'] = row.trip_route_id 
         if row.vehicle_id:
-            trip_info['vehicle_id'] = row.vehicle_id
+            new_row['vehicle_id'] = row.vehicle_id
         if row.stop_id:
             trip_info['stop_id'] = row.stop_id
         if row.timestamp:
@@ -196,7 +196,7 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
         if row.position_longitude:
             position_info['longitude'] = row.position_longitude
         if row.position_bearing:
-            new_row['position_bearing'] = row.position_bearing
+            position_info['position_bearing'] = row.position_bearing
         if row.position_speed:
             new_row['position_speed'] = row.position_speed
         if row.stop_id:
@@ -212,9 +212,11 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
             if row.geometry:
                 geojson_row['geometry'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
             if trip_info:
-                properties['trip_info'] = trip_info
-                properties['trip_info']['trip_id'] = trip_info['trip_id']
-                properties['trip_info']['current_stop_sequence'] = trip_info['current_stop_sequence']
+                properties['trip'] = trip_info
+                properties['trip']['trip_id'] = trip_info['trip_id']
+                properties['trip']['current_stop_sequence'] = trip_info['current_stop_sequence']
+                properties['trip']['vehicle_id'] = new_row['vehicle_id']
+
             geojson_row['properties'] = properties
             if hasattr(new_row, 'stop_id'):
                 geojson_row['properties']['stop_id'] = new_row.stop_id
@@ -262,7 +264,7 @@ def upcoming_stop_time_reformat_for_async(stop_time_update):
 
 def upcoming_stop_time_reformat(stop_time_update):
     if stop_time_update != None:
-        if stop_time_update.trip_updates:
+        if stop_time_update.trip_updates != None:
             sanitized_stop_time_json = stop_time_update.trip_updates.stop_time_json.replace("'", '"')
             update_json = json.loads(sanitized_stop_time_json)
             for row in update_json:
