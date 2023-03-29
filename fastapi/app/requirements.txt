@@ -25,3 +25,6 @@ polyline
 websockets
 fastapi-cache2[redis]
 aioredis
+asyncio
+asyncpg
+sqlalchemy[asyncio]
