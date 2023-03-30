@@ -211,7 +211,7 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
             geojson_row['type'] = 'Feature'
             if row.geometry:
                 geojson_row['geometry'] = JsonReturn(geo.mapping(shape.to_shape((row.geometry))))
-            if trip_info:
+            if hasattr(row, 'trip_id'):
                 properties['trip'] = trip_info
                 properties['trip']['trip_id'] = trip_info['trip_id']
                 properties['trip']['current_stop_sequence'] = trip_info['current_stop_sequence']
