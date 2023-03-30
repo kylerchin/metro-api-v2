@@ -445,15 +445,13 @@ async def live_get_gtfs_rt_trip_details(websocket: WebSocket,agency_id: AgencyId
                 async for result in crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code_for_async(session,route_code,geojson,agency_id.value):
                     await websocket.send_json(result)
                     await session.commit()
-                    await asyncio.sleep(10)
+                    await asyncio.sleep(5)
         except WebSocketDisconnect:
             await websocket.close()
             # result_array = []
             # result_array = crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(session,route_code,geojson,agency_id.value)
             # await websocket.send_json(crud.get_gtfs_rt_vehicle_positions_trip_data_by_route_code(session,route_code,geojson,agency_id.value))
             # await websocket.send_json(jsonable_encoder(result_array))
-
-            await asyncio.sleep(10)
         # payload = {"time": str(datetime.now()), "message": "Hello World!","value":random.randint(1,100)}
         # await websocket.send_json(payload)
         # await asyncio.sleep(10)
