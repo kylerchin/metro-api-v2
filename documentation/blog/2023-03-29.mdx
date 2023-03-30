@@ -1,13 +1,36 @@
 ---
 slug: websocket-to-me
-title:  Websocket to Me!
+title:  WebSocket to Me!
 authors: [albert]
-tags: [api, websockets]
+tags: [api,websockets,update]
 ---
 
-Hola Metro A-PIoneers! Today we are launching 2.1.21 of our API which is a mino version release that enables websockets!
+Hola Metro A-PIoneers! Today we are launching **2.1.21** of our API which is a minor version release that enables websockets!
 
-And gosh, was it a pain to implement!!! While FastAPI has good support for websockets, our API was not meant for asynchronous calls.
+Currently, every 10 seconds the `live/trip_detail` websocket returns trip details for a route, alongside headsign and current stop information. 
+
+<!--truncate-->
+
+You can find the URL of the websockets here:
+
+`wss://api.metro.net/{AGENCY_ID}/live/trip_detail/route_code/{ROUTE_CODE}?geojson={BOOLEAN}`
+
+- `{AGENCY_ID}` can either be `LACMTA` for bus or `LACMTA_Rail` for LACMTA_Rail
+- `{ROUTE_CODE}` can be a line, like the `720` or `801`
+- `{BOOLEAN}` for geojson value of `True` is ONLY supported right now.
+
+A working example WebSocket would be:
+- `wss://api.metro.net/LACMTA/live/trip_detail/route_code/720?geojson=True`
+
+You can check this page to play around:
+- https://api.metro.net/websocket_test
+
+
+Feel free to request to see what else you'd like to see on the GitHub [issues board](https://github.com/LACMTA/metro-api-v2/issues)!
+
+### The devil is in the (WebSocket) details
+
+And gosh, were websockets a pain to implement!!! While FastAPI has good support for websockets, our API was not meant for asynchronous calls.
 
 Why did we need these asynchronous calls? Well, the data we wanted to send through websockets was live GTFS Real Time data that was also joined to the GTFS Static data.
 
