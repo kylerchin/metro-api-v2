@@ -132,4 +132,34 @@ To use this configuration, press `F1` or `ctrl-shift-P` and choose `Debug: Selec
 - If no specific value for a parameter is specified at the end, the endpoint will return all values for that parameter.
 
 ## Documentation
+
 Visit [https://api.metro.net/docs/](https://api.metro.net/docs/)
+
+### Editing the documentation
+
+Install the packages
+
+```bash
+cd documentation
+yarn install
+```
+
+Start the `dev` server.
+```bash
+yarn start 
+```
+
+The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+
+The `yarn start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+
+Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+
+### Changes to the API Schema
+
+When there are changes to the OpenAPI Schema in the API you will need to regenerate the documentation based on the json file by running the command:
+
+```bash
+cd documentation
+yarn docusaurus clean-api-docs all
+```
