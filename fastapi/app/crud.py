@@ -233,7 +233,7 @@ def get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code: str, ge
 
 
 async def get_gtfs_rt_vehicle_positions_trip_data_by_route_code_for_async(session,route_code: str, geojson:bool,agency_id:str):
-    the_query = await session.execute(select(gtfs_models.VehiclePosition).where(gtfs_models.VehiclePosition.route_code == route_code,gtfs_models.VehiclePosition.agency_id == agency_id))
+    the_query = await session.execute(select(gtfs_models.VehiclePosition).where(gtfs_models.VehiclePosition.route_code == route_code,gtfs_models.VehiclePosition.agency_id == agency_id).order_by(gtfs_models.VehiclePosition.route_code))
     if geojson == True:
         this_json = {}
         count = 0
