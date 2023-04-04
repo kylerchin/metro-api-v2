@@ -485,13 +485,13 @@ def get_routes_by_route_id(db,route_id,agency_id):
 
 def get_route_overview_by_route_code(db,route_code,agency_id):
     if agency_id.lower() == 'all':
-        the_query = db.query(models.RouteOverview).order_by(models.RouteOverview.route_code).all()
+        the_query = db.query(models.RouteOverview).order_by(models.RouteOverview.route_code_padded).all()
         agency_schedule_data = {}
         for row in the_query:
             if row.agency_id in agency_schedule_data:
                 agency_schedule_data[row.agency_id].append(row)
             else:
-                agency_schedule_data[row.agency_id] = [row]
+                agency_schedule_data[row.agency_id] = [row]            
         return agency_schedule_data
     if route_code == 'list':
         the_query = db.query(models.RouteOverview).filter(models.RouteOverview.agency_id == agency_id).distinct(models.RouteOverview.route_code).all()
