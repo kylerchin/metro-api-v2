@@ -485,7 +485,7 @@ def get_routes_by_route_id(db,route_id,agency_id):
 
 def get_route_overview_by_route_code(db,route_code,agency_id):
     if agency_id.lower() == 'all':
-        the_query = db.query(models.RouteOverview).all()
+        the_query = db.query(models.RouteOverview).order_by(models.RouteOverview.route_code).all()
         agency_schedule_data = {}
         for row in the_query:
             if row.agency_id in agency_schedule_data:
