@@ -3,13 +3,14 @@ import update_canceled_trips as update_canceled_trips
 import utils.gtfs_rt_helper as gtfs_rt_helper
 import utils.gtfs_static_helper as gtfs_static_helper
 import utils.gopass_helper as gopass_helper
+import utils.main_helper as main_helper
 import threading
 import time
 from schedule import every, repeat, run_pending
 import pandas as pd
 # import schedule
 
-@repeat(every(60).seconds)
+@repeat(every(main_helper.set_interval_time()).seconds)
 def gtfs_rt_scheduler():
     try:
         gtfs_rt_helper.update_gtfs_realtime_data()
