@@ -233,7 +233,7 @@ def get_gtfs_rt_vehicle_positions_trip_data_by_route_code(db,route_code: str, ge
 
 
 async def get_gtfs_rt_vehicle_positions_trip_data_by_route_code_for_async(session,route_code: str, geojson:bool,agency_id:str):
-    the_query = await session.execute(select(gtfs_models.VehiclePosition).where(gtfs_models.VehiclePosition.route_code == route_code,gtfs_models.VehiclePosition.agency_id == agency_id))
+    the_query = await session.execute(select(gtfs_models.VehiclePosition).where(gtfs_models.VehiclePosition.route_code == route_code,gtfs_models.VehiclePosition.agency_id == agency_id).order_by(gtfs_models.VehiclePosition.route_code))
     if geojson == True:
         this_json = {}
         count = 0
@@ -485,14 +485,17 @@ def get_routes_by_route_id(db,route_id,agency_id):
 
 def get_route_overview_by_route_code(db,route_code,agency_id):
     if agency_id.lower() == 'all':
-        the_query = db.query(models.RouteOverview).all()
+        the_query = db.query(models.RouteOverview).order_by(models.RouteOverview.route_code_padded).all()
         agency_schedule_data = {}
         for row in the_query:
             if row.agency_id in agency_schedule_data:
                 agency_schedule_data[row.agency_id].append(row)
             else:
                 agency_schedule_data[row.agency_id] = [row]
-        return agency_schedule_data
+        reordered_agency_schedule_data_by_route_coded_padded = {}
+        for agency_id in agency_schedule_data:
+            reordered_agency_schedule_data_by_route_coded_padded[agency_id] = sorted(agency_schedule_data[agency_id], key=lambda k: k.route_code_padded)
+        return reordered_agency_schedule_data_by_route_coded_padded
     if route_code == 'list':
         the_query = db.query(models.RouteOverview).filter(models.RouteOverview.agency_id == agency_id).distinct(models.RouteOverview.route_code).all()
         result = []

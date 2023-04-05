@@ -83,6 +83,7 @@ class RouteOverview(Base):
     __tablename__ = "route_overview"
     route_id = Column(Integer, primary_key=True, index=True)
     route_code = Column(String)
+    route_code_padded= Column(Integer)
     route_short_name = Column(String)
     route_long_name = Column(String)
     route_desc = Column(String)
