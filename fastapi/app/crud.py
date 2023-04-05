@@ -491,8 +491,11 @@ def get_route_overview_by_route_code(db,route_code,agency_id):
             if row.agency_id in agency_schedule_data:
                 agency_schedule_data[row.agency_id].append(row)
             else:
-                agency_schedule_data[row.agency_id] = [row]            
-        return agency_schedule_data
+                agency_schedule_data[row.agency_id] = [row]
+        reordered_agency_schedule_data_by_route_coded_padded = {}
+        for agency_id in agency_schedule_data:
+            reordered_agency_schedule_data_by_route_coded_padded[agency_id] = sorted(agency_schedule_data[agency_id], key=lambda k: k.route_code_padded)
+        return reordered_agency_schedule_data_by_route_coded_padded
     if route_code == 'list':
         the_query = db.query(models.RouteOverview).filter(models.RouteOverview.agency_id == agency_id).distinct(models.RouteOverview.route_code).all()
         result = []
