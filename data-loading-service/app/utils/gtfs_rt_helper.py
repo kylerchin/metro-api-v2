@@ -194,6 +194,7 @@ def update_gtfs_realtime_data():
                     'position_longitude': entity.vehicle.position.longitude,
                     'position_bearing': entity.vehicle.position.bearing,
                     'position_speed': entity.vehicle.position.speed,
+                    'direction_id': entity.vehicle.trip.direction_id,
                     'vehicle_id': entity.vehicle.vehicle.id,
                     'vehicle_label': entity.vehicle.vehicle.label,
                     'agency_id': agency
