@@ -164,6 +164,8 @@ class VehiclePositions(BaseModel):
     position_bearing: float
     position_speed: float
 
+    direction_id: int
+
     vehicle_id: str
     vehicle_label: str
     id: int
