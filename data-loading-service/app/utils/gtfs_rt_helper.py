@@ -189,12 +189,12 @@ def update_gtfs_realtime_data():
                     'trip_id': entity.vehicle.trip.trip_id,
                     'trip_start_date': entity.vehicle.trip.start_date,
                     'trip_route_id': entity.vehicle.trip.route_id,
+                    'trip_direction_id': entity.vehicle.trip.direction_id,
                     'route_code': get_route_code_from_trip_route_id(entity.vehicle.trip.route_id,agency),
                     'position_latitude': entity.vehicle.position.latitude,
                     'position_longitude': entity.vehicle.position.longitude,
                     'position_bearing': entity.vehicle.position.bearing,
                     'position_speed': entity.vehicle.position.speed,
-                    'direction_id': entity.vehicle.trip.direction_id,
                     'vehicle_id': entity.vehicle.vehicle.id,
                     'vehicle_label': entity.vehicle.vehicle.label,
                     'agency_id': agency
