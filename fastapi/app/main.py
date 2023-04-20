@@ -615,4 +615,4 @@ app.add_middleware(
 async def startup_redis():
     redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-    FastAPILimiter.init(redis)
+    await FastAPILimiter.init(redis)
