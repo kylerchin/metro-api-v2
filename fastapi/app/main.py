@@ -47,6 +47,9 @@ from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 # from app.models import *
 # from app.security import *
 
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
+
 from .utils.log_helper import *
 from . import crud, models, security, schemas
 from .database import Session, engine, session, get_db,get_async_db
@@ -183,13 +186,13 @@ def standardize_string(input_string):
 #  Begin Routes
 ####################
 
-@app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"])
+@app.get("/{agency_id}/trip_updates/all",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 # @cache()
 async def all_trip_updates_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
     result = crud.get_all_gtfs_rt_trips(db,agency_id.value)
     return result
 
-@app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"])
+@app.get("/{agency_id}/trip_updates/{field_name}/{field_value}",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_name: TripUpdatesFieldsEnum, field_value=Optional[str], db: Session = Depends(get_db)):
 # async def get_gtfs_rt_trip_updates_by_field_name(agency_id,field_name,field_value=Optional[str],db: Session = Depends(get_db)):
     result = ""
@@ -213,16 +216,16 @@ async def get_gtfs_rt_trip_updates_by_field_name(agency_id: AgencyIdEnum, field_
                 return result
             return result
 
-@app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"])
+@app.get("/{agency_id}/vehicle_positions/all",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db),geojson: bool = False):
     result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value,geojson)
     return result
-# @app.get("/{agency_id}/vehicle_positions_no_cache/all",tags=["Real-Time data"])
+# @app.get("/{agency_id}/vehicle_positions_no_cache/all",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 # async def all_vehicle_position_updates(agency_id: AgencyIdEnum, db: Session = Depends(get_db)):
 #     result = crud.get_all_gtfs_rt_vehicle_positions(db,agency_id.value,geojson=False)
 #     return result
 
-@app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"])
+@app.get("/{agency_id}/vehicle_positions/{field_name}/{field_value}",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehiclePositionsFieldsEnum, geojson:bool=False,field_value=Optional[str], db: Session = Depends(get_db)):
     # result = crud.get_gtfs_rt_vehicle_positions_by_field_name(db,field_name,field_value,agency_id)
     result = ""
@@ -248,7 +251,7 @@ async def vehicle_position_updates(agency_id: AgencyIdEnum, field_name: VehicleP
                 return result
             return result
 
-@app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data"])
+@app.get("/{agency_id}/trip_detail/{vehicle_id}",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def get_trip_detail(agency_id: AgencyIdEnum, vehicle_id: str, geojson:bool=False,db: Session = Depends(get_db)):
     if vehicle_id == 'all':
         result = crud.get_all_gtfs_rt_vehicle_positions_trip_data(db,agency_id.value,geojson)
@@ -273,7 +276,7 @@ async def get_trip_detail_by_route_code(agency_id: AgencyIdEnum, route_code: str
     # crud.get_gtfs_rt_vehicle_positions_by_field_name(db,vehicle_id,geojson,agency_id.value)
     return result
 
-@app.get("/canceled_service_summary",tags=["Real-Time data"])
+@app.get("/canceled_service_summary",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def get_canceled_trip_summary(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     canceled_trips_summary = {}
@@ -301,13 +304,13 @@ async def get_canceled_trip_summary(db: Session = Depends(get_db)):
 #### END GTFS-RT Routes ####
 
 
-@app.get("/canceled_service/line/{line}",tags=["Real-Time data"])
+@app.get("/canceled_service/line/{line}",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def get_canceled_trip(db: Session = Depends(get_db),line: str = None):
     result = crud.get_canceled_trips(db,line)
     json_compatible_item_data = jsonable_encoder(result)
     return JSONResponse(content=json_compatible_item_data)
 
-@app.get("/canceled_service/all",tags=["Real-Time data"])
+@app.get("/canceled_service/all",tags=["Real-Time data"], dependencies=[Depends(RateLimiter(times=2, seconds=15))])
 async def get_canceled_trip(db: Session = Depends(get_db)):
     result = crud.get_canceled_trips(db,'all')
     json_compatible_item_data = jsonable_encoder(result)
@@ -612,3 +615,4 @@ app.add_middleware(
 async def startup_redis():
     redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    FastAPILimiter.init(redis)
