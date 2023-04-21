@@ -80,7 +80,7 @@ class VehiclePosition(GTFSrtBase):
     trip_start_date = Column(String)
     trip_route_id = Column(String)
     route_code = Column(String)
-    trip_direction_id = Column(Integer)
+    # trip_direction_id = Column(Integer)
 
     # Collapsed Vehicle.Position
     position_latitude = Column(Float)

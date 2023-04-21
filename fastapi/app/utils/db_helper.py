@@ -182,7 +182,7 @@ def vehicle_position_reformat_for_trip_details_for_async(row,geojson=False):
             trip_info['trip_id'] = row.trip_id
             trip_info['trip_start_date'] = row.trip_start_date
             trip_info['current_stop_sequence'] = row.current_stop_sequence
-            trip_info['direction_id'] = row.direction_id
+            # trip_info['direction_id'] = row.direction_id
 
         if row.trip_route_id:
             trip_info['trip_route_id'] = row.trip_route_id 

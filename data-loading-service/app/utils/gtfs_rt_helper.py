@@ -189,7 +189,7 @@ def update_gtfs_realtime_data():
                     'trip_id': entity.vehicle.trip.trip_id,
                     'trip_start_date': entity.vehicle.trip.start_date,
                     'trip_route_id': entity.vehicle.trip.route_id,
-                    'trip_direction_id': trip_update_df.loc((trip_update_df['trip_id'] == entity.vehicle.trip.trip_id) & (trip_update_df['agency_id'] == agency), 'direction_id').iloc[0],
+                    # 'trip_direction_id': entity.vehicle.trip.direction_id,
                     'route_code': get_route_code_from_trip_route_id(entity.vehicle.trip.route_id,agency),
                     'position_latitude': entity.vehicle.position.latitude,
                     'position_longitude': entity.vehicle.position.longitude,
