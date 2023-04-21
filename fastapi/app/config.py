@@ -26,7 +26,7 @@ class Config:
     REMOTEPATH = '/nextbus/prod/'
     DEBUG = True
     REPODIR = "/gtfs_rail"
-    CURRENT_VERSION = "2.1.22"
+    CURRENT_VERSION = "2.1.23"
     API_LAST_UPDATE_TIME = os.path.getmtime(r'app/main.py')
     LOGZIO_TOKEN = os.environ.get('LOGZIO_TOKEN')
     LOGZIO_URL = os.environ.get('LOGZIO_URL')
