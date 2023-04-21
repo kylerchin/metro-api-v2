@@ -611,5 +611,5 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_redis():
-    redis =  aioredis.from_url("redis://redis", encoding="utf8", decode_responses=True)
+    redis =  aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True,port=6379)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
