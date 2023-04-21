@@ -28,4 +28,3 @@ aioredis
 asyncio
 asyncpg
 sqlalchemy[asyncio]
-fastapi-limiter
