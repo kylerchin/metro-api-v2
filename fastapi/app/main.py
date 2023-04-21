@@ -32,13 +32,13 @@ import yaml
 
 from starlette.middleware.cors import CORSMiddleware
 
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_cache.decorator import cache
+# from fastapi_cache import FastAPICache
+# from fastapi_cache.backends.redis import RedisBackend
+# from fastapi_cache.decorator import cache
 from starlette.requests import Request
 from starlette.responses import Response
 
-from redis import asyncio as aioredis
+# from redis import asyncio as aioredis
 from enum import Enum
 
 # for OAuth2
@@ -609,7 +609,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-@app.on_event("startup")
-async def startup_redis():
-    redis =  aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True,port=6379)
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+# @app.on_event("startup")
+# async def startup_redis():
+    # redis =  aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True,port=6379)
+#     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
