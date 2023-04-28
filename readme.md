@@ -1,6 +1,8 @@
-# Metro API v2
+ Metro API v2
 
 Metro API v2 is an API for Metro's GTFS-RT data.
+
+* [Documentation site](https://lacmta.github.io/metro-api-v2/)
 
 ## Versioning
 
@@ -8,13 +10,9 @@ Metro API v2 uses a modified version of [Semantic Versioning](https://semver.org
 
 More versioning information can be found in [versioning.md](versioning.md)
 
-## Getting started
+## Getting Started
 
-### Prerequistes
-
-- Docker installed
-
-### Local Deployment
+### Clone the Repository
 
 Install the repository locally. The application can be run directly or through a Docker container.
 
@@ -26,29 +24,58 @@ git clone https://github.com/LACMTA/metro_api_v2.git
 cd metro-api-v2
 ```
 
-#### Environment Variables
+### Set Environment Variables
 
-Create a `.env` file with the required variables.
+Get the `.env` file with the necessary credentials and add it to the repository's root directory.
 
-#### Running in Docker
+## Deploying
 
-Build the docker container and then run it.
+### Prerequistes
+
+- [Docker installed](https://docs.docker.com/get-docker/)
+    - Even if you are running Linux through WSL, you will need to install the Docker Desktop for Windows, not Linux! Have WSL v2 installed, or else you will need to turn on Hyper-V and Containers within the Windows Features.
+
+This requires Docker to run the multiple containers as part of a single image.
+
+### Set Docker Compose File
+
+Get the `docker-compose.yml` and add it to the repository's root directory.
+
+### Build All Containers
+
+Build all containers as part of the same image so they can talk to each other:
 
 ``` shell
-# creates image in current folder with tag nginx
-docker build . -t metro-api-v2:metro-api-v2
-
-# runs metro-api-v2 image
-docker run --rm -it  -p 80:80/tcp metro-api-v2:metro-api-v2
+docker compose build
 ```
 
-???
+This will take a while each time you run after starting docker because all the files need to be downloaded.  While docker is open, these files will stay cached.
 
-``` shell
-docker-compose stop -t 1
+### Run the Containers
+
+Run the containers using this command in order to test your application changes locally before deployment.
+
+```shell
+docker compose up
 ```
 
-#### Running Locally
+### Deployment
+
+__To Development:__
+
+Deployments are handled through GitHub by opening a Pull Request from a dedicated branch into the `dev` branch.
+
+Upon merging into the `dev` branch, a GitHub Actions workflow will trigger to deploy the image to the dev environment on AWS Lightsail.
+
+__To Production:__
+
+Open a Pull Request from the `dev` branch to the `main` branch.
+
+Upon merging into the `main` branch, a GitHub Actions workflow will trigger to deploy the image to the production environment on AWS Lightsail.
+
+## Developing
+
+### Developing the FastAPI Application
 
 ``` shell
 # change to the API application directory
@@ -65,19 +92,14 @@ Use this command to run uvicorn from Windows.
 
 ``` shell
 python -m uvicorn app.main:app --reload 
-
-# or
-
-python3 -m uvicorn app.main:app --reload
 ```
 
-### Run Data Service
+### Developing the Data Loading Service Application
 
 ``` shell
 # change to the API application directory
 cd data-loading-service
 ```
-
 
 ``` shell
 # install the required libraries
@@ -90,21 +112,7 @@ Run the application
 # install the required libraries
 python app
 
-```
 python main.py
-```
-
-### Misc Commands
-
-``` shell
-docker build -t metro-api-v2:metro-api-v2 .
-docker compose up
-
-docker tag metro-api-v2:metro-api-v2 albertkun/
-
-metro-api-v2
-
-docker push albertkun/metro-api-v2
 ```
 
 ### Debugging in VS Code
@@ -126,14 +134,33 @@ This will tell the debugger to launch uvicorn as a python module, which is the e
 
 To use this configuration, press `F1` or `ctrl-shift-P` and choose `Debug: Select and Start Debugging`.  From the list, select the `Python: Module` configuration.
 
-## General Endpoint Naming Conventions
+### Database
+
+Install [DBeaver](https://dbeaver.io/download/).
+
+Install [PostgreSQL v15.2](https://www.postgresql.org/download/).
+
+#### Changing the Database
+
+Is the data updated via:
+
+* a manual trigger
+* or an automated schedule
+
+Use the `data-loading-service` application for automated scheduled data loading because it will re-create the database tables and columns.
+
+If the database update is updated via a manual trigger, we can use the Jupyter Notebooks/Python scripts for one-time changes to the database.
+
+Which tables are automated?
+
+## Endpoint Naming Conventions
 
 - All GTFS endpoints require an `agency_id`.
 - If no specific value for a parameter is specified at the end, the endpoint will return all values for that parameter.
 
 ## Documentation
 
-Visit [https://api.metro.net/docs/](https://api.metro.net/docs/)
+We are using Docusaurus for our documentation website.
 
 ### Editing the documentation
 
@@ -162,4 +189,22 @@ When there are changes to the OpenAPI Schema in the API you will need to regener
 ```bash
 cd documentation
 yarn docusaurus clean-api-docs all
+```
+
+## Extra Notes
+
+### Build Individual Docker Containers For Each Application
+
+You can use these instructions to build individual containers that run independently and don't talk to each other, and to push updates to 
+
+``` shell
+# cd into any application folder: fastapi, data-loading-service
+cd fastapi
+
+# create image in current folder with tag nginx
+# [application]:[version]
+docker build . -t metro-api-v2:metro-api-v2 .
+
+# runs metro-api-v2 image
+docker run --rm -it  -p 80:80/tcp metro-api-v2:metro-api-v2
 ```
