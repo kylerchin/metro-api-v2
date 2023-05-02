@@ -1,5 +1,10 @@
 import os
-from dotenv import load_dotenv
+
+try:
+    from secrets import load_secrets
+    load_secrets()
+except ModuleNotFoundError:
+    pass
 
 def set_db_schema():
     try:

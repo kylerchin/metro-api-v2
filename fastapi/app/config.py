@@ -1,20 +1,16 @@
 import os
-from dotenv import load_dotenv
 
-from .utils.log_helper import *
-from . import *
 try:
-    load_dotenv('.env')
-    logger.info('Environment variables loaded from .env file')
-except Exception as e:
-    logger.exception('Environment variables not loaded from .env file: ' + str(e))
+    from .secrets import load_secrets
+    load_secrets()
+except ModuleNotFoundError:
+    pass
 
 class Config:
     BASE_URL = "https://api.metro.net"
     REDIS_URL = "redis://redis:6379"
     TARGET_DB_SCHEMA = "metro_api"
     DB_URI = os.environ.get('URI')
-    ASYNC_DB_URI = os.environ.get('ASYNC_URI')
     SECRET_KEY = os.environ.get('HASH_KEY')
     ALGORITHM = os.environ.get('HASHING_ALGORITHM')
     ACCESS_TOKEN_EXPIRE_MINUTES  = 30
