@@ -75,6 +75,23 @@ Upon merging into the `main` branch, a GitHub Actions workflow will trigger to d
 
 ## Developing
 
+### Prerequisites
+
+Install python
+
+On Ubuntu:
+
+```shell
+sudo apt update && upgrade
+sudo apt install python3 python3-pip
+```
+
+### Set Environment Variables
+
+Get the `secrets.py` files with the necessary credentials and add them to the `\fastapi\app\` and `\data-loading-service\app\` folders.
+
+Make sure they are targeted by the `.gitignore` and grayed out, indicating that they will not be tracked or committed to the repository.
+
 ### Developing the FastAPI Application
 
 ``` shell
@@ -87,6 +104,8 @@ pip3 install -r requirements.txt
 # run uvicorn to serve the API
 uvicorn app.main:app --reload --port 1212
 ```
+
+You may run into an error when trying to install `psycopg2`.
 
 Use this command to run uvicorn from Windows.
 
@@ -110,9 +129,12 @@ Run the application
 
 ``` shell
 # install the required libraries
-python app
+cd app
 
 python main.py
+
+# or
+python3 main.py
 ```
 
 ### Debugging in VS Code
@@ -149,9 +171,11 @@ Is the data updated via:
 
 Use the `data-loading-service` application for automated scheduled data loading because it will re-create the database tables and columns.
 
-If the database update is updated via a manual trigger, we can use the Jupyter Notebooks/Python scripts for one-time changes to the database.
+If the database update is updated via a manual trigger, we can use the Jupyter Notebooks/Python scripts for one-time changes to the database. Any manual changes will need to be applied to both the dev and production environments.
 
 Which tables are automated?
+
+The `config.py` file inside the application folders sets the `TARGET_DB_SCHEMA` value to determine whether the production or dev database is used.
 
 ## Endpoint Naming Conventions
 
