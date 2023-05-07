@@ -1,8 +1,10 @@
 import os
 
 try:
-    from secrets import load_secrets
-    load_secrets()
+    current_environment = os.environ.get('RUNNING_ENV')
+    if current_environment != 'prod':
+        from secrets import load_secrets
+        load_secrets()
 except ModuleNotFoundError:
     pass
 
