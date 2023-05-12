@@ -1,11 +1,13 @@
 import os
+import logging
 
 try:
-    current_environment = os.environ.get('RUNNING_ENV')
-    if current_environment != 'prod':
-        from secrets import load_secrets
+    if os.path.isfile('app/secrets.py'):
+        print('Loading secrets from secrets.py')
+        from .secrets import load_secrets
         load_secrets()
 except ModuleNotFoundError:
+    logging.info('No secrets.py found, loading from environment variables')
     pass
 
 def set_db_schema():
