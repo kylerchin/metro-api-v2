@@ -19,7 +19,7 @@ git tag
 ### Pushing the version
 
 ```shell
-git push origin v2.1.10
+git push -tags
 ```
 
 ## Other notes
