@@ -30,3 +30,4 @@ aioredis
 asyncio
 asyncpg
 sqlalchemy[asyncio]
+versiontag

@@ -1,18 +1,27 @@
 import os
 import logging
+import versiontag
 
-try:
-    if os.path.isfile('app/secrets.py'):
-        print('Loading secrets from secrets.py')
-        try:
-            from .secrets import load_secrets
-            load_secrets()
-        except ModuleNotFoundError:
-            logging.info('No secrets.py found, loading from environment variables')
-            pass
-except ModuleNotFoundError:
-    logging.info('No secrets.py found, loading from environment variables')
-    pass
+
+def get_parent_folder_git_tag_version():
+    full_version_tag = versiontag.get_version(pypi=True)
+    if len(full_version_tag.split('.')) > 2:
+        short_version_tag = full_version_tag.rsplit('.', 1)[0]
+        return short_version_tag    
+    else:
+        return full_version_tag
+# try:
+#     if os.path.isfile('app/secrets.py'):
+#         print('Loading secrets from secrets.py')
+#         try:
+#             from .secrets import load_secrets
+#             load_secrets()
+#         except ModuleNotFoundError:
+#             logging.info('No secrets.py found, loading from environment variables')
+#             pass
+# except ModuleNotFoundError:
+#     logging.info('No secrets.py found, loading from environment variables')
+#     pass
 
 def set_db_schema():
     try:
@@ -23,7 +32,8 @@ def set_db_schema():
             return 'metro_api_dev'
     except Exception as e:
         print('Error setting db schema: ' + str(e))
-        
+
+
 class Config:
     BASE_URL = "https://api.metro.net"
     TARGET_DB_SCHEMA = set_db_schema()
@@ -40,7 +50,7 @@ class Config:
     REMOTEPATH = '/nextbus/prod/'
     DEBUG = True
     REPODIR = "/gtfs_rail"
-    CURRENT_VERSION = "2.1.26"
+    CURRENT_API_VERSION = get_parent_folder_git_tag_version()
     # API_LAST_UPDATE_TIME = os.path.getmtime(r'main.py')
     LOGZIO_TOKEN = os.environ.get('LOGZIO_TOKEN')
     LOGZIO_URL = os.environ.get('LOGZIO_URL')
