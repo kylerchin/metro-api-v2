@@ -1,5 +1,5 @@
 import os
-from versiontag import get_version
+import versiontag
 import logging
 try:
     if os.path.isfile('app/secrets.py'):
@@ -10,12 +10,16 @@ except ModuleNotFoundError:
     logging.info('No secrets.py found, loading from environment variables')
     pass
 
+get_parent_folders_parent = lambda path: os.path.abspath(os.path.join(path, os.pardir, os.pardir))
 
-def get_version_from_parent_dir():
-    try:
-        return os.path.basename(os.path.dirname(os.path.abspath(__file__))).get_version(pypi=True)
-    except Exception as e:
-        return "2.2.0"
+def get_parent_folder_git_tag_version():
+    full_version_tag = versiontag.get_version(pypi=True)
+    if len(full_version_tag.split('.')) > 2:
+        short_version_tag = full_version_tag.rsplit('.', 1)[0]
+        return short_version_tag    
+    else:
+        return full_version_tag
+
 class Config:
     BASE_URL = "https://api.metro.net"
     REDIS_URL = "redis://redis:6379"
@@ -32,7 +36,7 @@ class Config:
     REMOTEPATH = '/nextbus/prod/'
     DEBUG = True
     REPODIR = "/gtfs_rail"
-    API_VERSION = get_version(pypi=True)
+    API_VERSION = get_parent_folder_git_tag_version()
     API_LAST_UPDATE_TIME = os.path.getmtime(r'app/main.py')
     LOGZIO_TOKEN = os.environ.get('LOGZIO_TOKEN')
     LOGZIO_URL = os.environ.get('LOGZIO_URL')

@@ -1,7 +1,15 @@
 import os
 import logging
-from versiontag import get_version
+import versiontag
 
+
+def get_parent_folder_git_tag_version():
+    full_version_tag = versiontag.get_version(pypi=True)
+    if len(full_version_tag.split('.')) > 2:
+        short_version_tag = full_version_tag.rsplit('.', 1)[0]
+        return short_version_tag    
+    else:
+        return full_version_tag
 # try:
 #     if os.path.isfile('app/secrets.py'):
 #         print('Loading secrets from secrets.py')
@@ -42,7 +50,7 @@ class Config:
     REMOTEPATH = '/nextbus/prod/'
     DEBUG = True
     REPODIR = "/gtfs_rail"
-    API_VERSION = get_version(pypi=True)
+    API_VERSION = get_parent_folder_git_tag_version()
     # API_LAST_UPDATE_TIME = os.path.getmtime(r'main.py')
     LOGZIO_TOKEN = os.environ.get('LOGZIO_TOKEN')
     LOGZIO_URL = os.environ.get('LOGZIO_URL')
