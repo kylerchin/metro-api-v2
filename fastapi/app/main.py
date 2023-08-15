@@ -533,7 +533,7 @@ def index(request:Request):
     except Exception as e:
         logger.exception(type(e).__name__ + ": " + str(e), exc_info=False)
     
-    return templates.TemplateResponse("index.html", context= {"request": request,"api_version":config.API_VERSION,"update_time":human_readable_default_update})
+    return templates.TemplateResponse("index.html", context= {"request": request,"current_api_version":config.CURRENT_API_VERSION,"update_time":human_readable_default_update})
 
 class LogFilter(logging.Filter):
     def filter(self, record):
