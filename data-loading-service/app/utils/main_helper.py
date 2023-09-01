@@ -5,7 +5,7 @@ def set_interval_time():
     try:
         current_environment = os.environ.get('RUNNING_ENV')
         if current_environment == 'prod':
-            return 15
+            return 5
         else:
             return 120
     except Exception as e:
